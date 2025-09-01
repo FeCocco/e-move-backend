@@ -29,7 +29,7 @@ public class Usuario {
         FEMININO
     }
 
-    private int Telefone;
+    private String Telefone;
 
     private String email;
 
