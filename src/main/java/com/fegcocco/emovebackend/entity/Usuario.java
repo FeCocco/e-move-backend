@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "USUARIOS")
+@Table(name = "usuarios")
 @Getter
 @Setter
 public class Usuario {
@@ -29,7 +29,7 @@ public class Usuario {
         FEMININO
     }
 
-    private String Telefone;
+    private String telefone;
 
     private String email;
 

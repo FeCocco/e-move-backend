@@ -40,4 +40,32 @@ public class UsuarioController {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
     }
+
+    @GetMapping("/usuario/me")
+    public ResponseEntity<?> getUsuarioLogado(@RequestHeader("Authorization") String authorizationHeader) {
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Cabeçalho de autorização ausente ou inválido.");
+        }
+
+        String token = authorizationHeader.substring(7);
+
+        if (!tokenService.isTokenValid(token)) {
+            return ResponseEntity.status(401).body("Token inválido ou expirado.");
+        }
+
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
+
+            if (usuarioOptional.isPresent()) {
+                UsuarioDTO usuarioDTO = new UsuarioDTO(usuarioOptional.get());
+                return ResponseEntity.ok(usuarioDTO);
+            } else {
+                return ResponseEntity.status(404).body("Usuário não encontrado.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Erro ao processar o token.");
+        }
+    }
 }
