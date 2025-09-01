@@ -1,4 +1,4 @@
-package com.fegcocco.emovebackend.Entity;
+package com.fegcocco.emovebackend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
