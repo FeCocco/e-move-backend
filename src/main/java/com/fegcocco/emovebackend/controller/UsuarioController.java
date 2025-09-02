@@ -1,15 +1,18 @@
 package com.fegcocco.emovebackend.controller;
 
+import com.fegcocco.emovebackend.dto.CadastroDTO;
 import com.fegcocco.emovebackend.dto.LoginDTO;
 import com.fegcocco.emovebackend.dto.RespostaLoginDTO;
 import com.fegcocco.emovebackend.dto.UsuarioDTO;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 import com.fegcocco.emovebackend.service.TokenService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -41,6 +44,28 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/cadastro")
+    public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody CadastroDTO cadastroDTO) {
+
+        if (UsuarioRepository.findByEmail(cadastroDTO.getEmail()).isPresent()) {
+            return ResponseEntity.status(409).body("Este e-mail já está em uso.");
+        }
+
+        Usuario novoUsuario = new Usuario();
+        novoUsuario.setNome(cadastroDTO.getNome());
+        novoUsuario.setEmail(cadastroDTO.getEmail());
+        novoUsuario.setCpf(cadastroDTO.getCpf());
+        novoUsuario.setTelefone(cadastroDTO.getTelefone());
+        novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());
+        novoUsuario.setSenha(cadastroDTO.getSenha()); //adicionar um PasswordEncoder no futuro!
+
+        novoUsuario.setDataCadastro(new Date());
+
+        Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
+
+        return ResponseEntity.status(201).body(new UsuarioDTO(usuarioSalvo));
+    }
+
     @GetMapping("/usuario/me")
     public ResponseEntity<?> getUsuarioLogado(@RequestHeader("Authorization") String authorizationHeader) {
 
@@ -68,4 +93,5 @@ public class UsuarioController {
             return ResponseEntity.status(401).body("Erro ao processar o token.");
         }
     }
+
 }

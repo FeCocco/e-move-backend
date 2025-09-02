@@ -2,6 +2,7 @@ package com.fegcocco.emovebackend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.antlr.v4.runtime.misc.NotNull;
 
 import java.util.Date;
 
@@ -11,30 +12,36 @@ import java.util.Date;
 @Setter
 public class Usuario {
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Sexo sexo;
-
-    @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
-    private Long id;
-
-    private String nome;
-
-    private String cpf;
-
-    private Date dataNascimento;
 
     public enum Sexo {
         MASCULINO,
         FEMININO
     }
 
+    @Id
+    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String nome;
+
+    @Column(unique = true)
+    private String cpf;
+
+    private Date dataNascimento;
+
     private String telefone;
 
+    @Column(unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String senha;
 
+    @Column(nullable = false)
     private Date dataCadastro;
 
 }
