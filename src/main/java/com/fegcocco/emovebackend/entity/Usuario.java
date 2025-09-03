@@ -1,8 +1,10 @@
 package com.fegcocco.emovebackend.entity;
 
 import jakarta.persistence.*;
+import jdk.jfr.Timestamp;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
@@ -12,7 +14,6 @@ import java.util.Date;
 @Setter
 public class Usuario {
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Sexo sexo;
 
@@ -42,6 +43,7 @@ public class Usuario {
     private String senha;
 
     @Column(nullable = false)
+    @CreationTimestamp
     private Date dataCadastro;
 
 }

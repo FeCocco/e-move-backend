@@ -56,10 +56,10 @@ public class UsuarioController {
         novoUsuario.setEmail(cadastroDTO.getEmail());
         novoUsuario.setCpf(cadastroDTO.getCpf());
         novoUsuario.setTelefone(cadastroDTO.getTelefone());
+        novoUsuario.setSexo(cadastroDTO.getSexo());
         novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());
         novoUsuario.setSenha(cadastroDTO.getSenha()); //adicionar um PasswordEncoder no futuro!
 
-        novoUsuario.setDataCadastro(new Date());
 
         Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
 

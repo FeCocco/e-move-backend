@@ -1,5 +1,6 @@
 package com.fegcocco.emovebackend.dto;
 
+import com.fegcocco.emovebackend.entity.Usuario;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -22,8 +23,8 @@ public class CadastroDTO {
 
     @NotBlank(message = "O telefone não pode estar em branco.")
     private String telefone;
+    private Usuario.Sexo sexo;
 
-    @NotNull(message = "A data de nascimento não pode ser nula.")
     private Date dataNascimento;
 
     @NotBlank(message = "A senha не pode estar em branco.")
