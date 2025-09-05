@@ -43,8 +43,8 @@ Siga os passos abaixo para rodar o projeto na sua máquina.
 
 **1. Clone o repositório:**
 ```bash
-git clone [https://github.com/FeCocco/e-Move.git](https://github.com/FeCocco/e-Move.git)
-cd e-Move/e-move-backend
+git clone https://github.com/FeCocco/e-move-backend.git
+cd e-move-backend
 ```
 
 **2. Configure o Banco de Dados:**
