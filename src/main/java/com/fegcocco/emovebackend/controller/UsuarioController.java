@@ -2,22 +2,22 @@ package com.fegcocco.emovebackend.controller;
 
 import com.fegcocco.emovebackend.dto.CadastroDTO;
 import com.fegcocco.emovebackend.dto.LoginDTO;
-import com.fegcocco.emovebackend.dto.RespostaLoginDTO;
 import com.fegcocco.emovebackend.dto.UsuarioDTO;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 import com.fegcocco.emovebackend.service.TokenService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true") //MUDAR EM PRODUCAO
 public class UsuarioController {
 
     @Autowired
@@ -27,7 +27,7 @@ public class UsuarioController {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) {
         Optional<Usuario> userOptional = UsuarioRepository.findByEmail(loginDTO.getEmail());
 
         if (userOptional.isEmpty()) {
@@ -38,7 +38,19 @@ public class UsuarioController {
 
         if (loginDTO.getSenha().equals(user.getSenha())) {
             String token = tokenService.generateToken(user);
-            return ResponseEntity.ok(new RespostaLoginDTO(token));
+
+            Cookie cookie = new Cookie("e-move-token", token);
+
+            // propriedades de segurança
+            cookie.setHttpOnly(true); // Impede acesso via JavaScript
+            cookie.setSecure(false); // Enviar apenas sobre HTTPS (MUDAR EM PROODUCAO)
+            cookie.setPath("/");
+            cookie.setMaxAge(24 * 60 * 60); // Expira em 24 horas
+            // cookie.setSameSite("Strict"); // Protecao extra contra CSRF (MUDAR EM PROODUCAO)
+
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(new UsuarioDTO(user));
         } else {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
@@ -67,13 +79,11 @@ public class UsuarioController {
     }
 
     @GetMapping("/usuario/me")
-    public ResponseEntity<?> getUsuarioLogado(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<?> getUsuarioLogado(@CookieValue(name = "e-move-token", required = false) String token) {
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Cabeçalho de autorização ausente ou inválido.");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(401).body("Token de autenticação não encontrado.");
         }
-
-        String token = authorizationHeader.substring(7);
 
         if (!tokenService.isTokenValid(token)) {
             return ResponseEntity.status(401).body("Token inválido ou expirado.");
