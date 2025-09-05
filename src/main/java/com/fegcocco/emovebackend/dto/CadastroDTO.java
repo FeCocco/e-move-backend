@@ -28,6 +28,6 @@ public class CadastroDTO {
     private Date dataNascimento;
 
     @NotBlank(message = "A senha не pode estar em branco.")
-    //@Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres.")
+    @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres.")
     private String senha;
 }

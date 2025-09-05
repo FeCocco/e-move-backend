@@ -9,7 +9,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class UsuarioDTO {
-    private Long id;
+    //private Long id;
     private String nome;
     private String email;
     private String telefone;
@@ -19,7 +19,7 @@ public class UsuarioDTO {
     private Date dataNascimento;
 
     public UsuarioDTO(Usuario usuario) {
-        this.id = usuario.getId();
+        //this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
         this.telefone = usuario.getTelefone();

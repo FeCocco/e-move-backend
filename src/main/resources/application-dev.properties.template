@@ -14,3 +14,12 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
 
 jwt.secret=[SEU_TOKEN_AQUI] <-- IMPORTANTE
 jwt.expiration=86400000 <-- TEMPO DE EXPIRACAO DI TOKEN
+
+# Tempo máximo que a aplicação vai esperar por uma conexão do banco (em milissegundos).
+spring.datasource.hikari.connection-timeout=3000
+
+# Tempo máximo que uma conexão pode ficar inativa no pool.
+spring.datasource.hikari.idle-timeout=30000
+
+# Fallback para limpar conexões paradas.
+spring.datasource.hikari.max-lifetime=120000
