@@ -71,7 +71,7 @@ public class UsuarioController {
         novoUsuario.setTelefone(cadastroDTO.getTelefone());
         novoUsuario.setSexo(cadastroDTO.getSexo());
         novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());
-        novoUsuario.setSenha(cadastroDTO.getSenha()); //adicionar um PasswordEncoder no futuro!
+        novoUsuario.setSenha(cadastroDTO.getSenha()); //*********ADICIONAR PASSWORD ENCODER*************
 
 
         Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
@@ -106,13 +106,9 @@ public class UsuarioController {
     }
 
     @PutMapping("/usuario/me")
-    public ResponseEntity<?> updateUsuario( @CookieValue(name = "e-move-token") String token, @Valid @RequestBody UpdateUsuarioDTO updateDTO) {
+    public ResponseEntity<?> updateUsuario(@CookieValue(name = "e-move-token") String token, @Valid @RequestBody UpdateUsuarioDTO updateDTO) {
 
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(401).body("Token de autenticação não encontrado.");
-        }
-
-        if (!tokenService.isTokenValid(token)) {
+        if (token == null || !tokenService.isTokenValid(token)) {
             return ResponseEntity.status(401).body("Token inválido ou expirado.");
         }
 
@@ -126,17 +122,22 @@ public class UsuarioController {
 
             Usuario usuario = usuarioOptional.get();
 
-            if (updateDTO.getNome() != null && !updateDTO.getNome().isBlank()) {
-                usuario.setNome(updateDTO.getNome());
+            if (!usuario.getEmail().equals(updateDTO.getEmail())) {
+
+                if (UsuarioRepository.findByEmail(updateDTO.getEmail()).isPresent()) {
+                    return ResponseEntity.status(409).body("Este e-mail já está em uso por outra conta.");
+                }
             }
-            if (updateDTO.getEmail() != null && !updateDTO.getEmail().isBlank()) {
-                usuario.setEmail(updateDTO.getEmail());
-            }
-            if (updateDTO.getTelefone() != null && !updateDTO.getTelefone().isBlank()) {
-                usuario.setTelefone(updateDTO.getTelefone());
-            }
+
+            usuario.setNome(updateDTO.getNome());
+            usuario.setEmail(updateDTO.getEmail());
+            usuario.setTelefone(updateDTO.getTelefone());
+
             if (updateDTO.getSenha() != null && !updateDTO.getSenha().isBlank()) {
-                usuario.setSenha(updateDTO.getSenha()); //***********CRIPTOGRAFAR COM PASSWORD ENCODER***********
+                if (updateDTO.getSenha().length() < 8) {
+                    return ResponseEntity.status(400).body("A nova senha deve ter no mínimo 8 caracteres.");
+                }
+                usuario.setSenha(updateDTO.getSenha());//*********ADICIONAR PASSWORD ENCODER*************
             }
 
             Usuario usuarioAtualizado = UsuarioRepository.save(usuario);
@@ -144,7 +145,8 @@ public class UsuarioController {
             return ResponseEntity.ok(new UsuarioDTO(usuarioAtualizado));
 
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("Erro ao processar o token ou atualizar o usuário.");
+            return ResponseEntity.status(500).body("Ocorreu um erro interno ao tentar atualizar o usuário.");
         }
     }
+
 }

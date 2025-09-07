@@ -1,12 +1,10 @@
 package com.fegcocco.emovebackend.entity;
 
 import jakarta.persistence.*;
-import jdk.jfr.Timestamp;
-import lombok.*;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "usuarios")
@@ -23,27 +21,28 @@ public class Usuario {
     }
 
     @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String nome;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String cpf;
 
+    @Column(nullable = false)
     private Date dataNascimento;
 
+    @Column(nullable = false)
     private String telefone;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String senha;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Date dataCadastro;
-
 }
