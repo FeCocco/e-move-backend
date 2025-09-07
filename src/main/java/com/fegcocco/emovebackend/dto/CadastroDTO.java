@@ -22,12 +22,16 @@ public class CadastroDTO {
     private String cpf;
 
     @NotBlank(message = "O telefone não pode estar em branco.")
+    @Size(min = 10, max = 11, message = "O telefone deve ter até 11 dígitos")
     private String telefone;
+
+    @NotBlank(message = "O sexo não pode estar em branco.")
     private Usuario.Sexo sexo;
 
+    @NotBlank(message = "A data de nascimento não pode estar em branco.")
     private Date dataNascimento;
 
-    @NotBlank(message = "A senha не pode estar em branco.")
+    @NotBlank(message = "A senha não pode estar em branco.")
     @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres.")
     private String senha;
 }

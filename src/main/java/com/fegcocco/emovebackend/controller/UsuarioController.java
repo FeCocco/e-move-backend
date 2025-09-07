@@ -2,6 +2,7 @@ package com.fegcocco.emovebackend.controller;
 
 import com.fegcocco.emovebackend.dto.CadastroDTO;
 import com.fegcocco.emovebackend.dto.LoginDTO;
+import com.fegcocco.emovebackend.dto.UpdateUsuarioDTO;
 import com.fegcocco.emovebackend.dto.UsuarioDTO;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
@@ -70,7 +71,7 @@ public class UsuarioController {
         novoUsuario.setTelefone(cadastroDTO.getTelefone());
         novoUsuario.setSexo(cadastroDTO.getSexo());
         novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());
-        novoUsuario.setSenha(cadastroDTO.getSenha()); //adicionar um PasswordEncoder no futuro!
+        novoUsuario.setSenha(cadastroDTO.getSenha()); //*********ADICIONAR PASSWORD ENCODER*************
 
 
         Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
@@ -101,6 +102,50 @@ public class UsuarioController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(401).body("Erro ao processar o token.");
+        }
+    }
+
+    @PutMapping("/usuario/me")
+    public ResponseEntity<?> updateUsuario(@CookieValue(name = "e-move-token") String token, @Valid @RequestBody UpdateUsuarioDTO updateDTO) {
+
+        if (token == null || !tokenService.isTokenValid(token)) {
+            return ResponseEntity.status(401).body("Token inválido ou expirado.");
+        }
+
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
+
+            if (usuarioOptional.isEmpty()) {
+                return ResponseEntity.status(404).body("Usuário não encontrado.");
+            }
+
+            Usuario usuario = usuarioOptional.get();
+
+            if (!usuario.getEmail().equals(updateDTO.getEmail())) {
+
+                if (UsuarioRepository.findByEmail(updateDTO.getEmail()).isPresent()) {
+                    return ResponseEntity.status(409).body("Este e-mail já está em uso por outra conta.");
+                }
+            }
+
+            usuario.setNome(updateDTO.getNome());
+            usuario.setEmail(updateDTO.getEmail());
+            usuario.setTelefone(updateDTO.getTelefone());
+
+            if (updateDTO.getSenha() != null && !updateDTO.getSenha().isBlank()) {
+                if (updateDTO.getSenha().length() < 8) {
+                    return ResponseEntity.status(400).body("A nova senha deve ter no mínimo 8 caracteres.");
+                }
+                usuario.setSenha(updateDTO.getSenha());//*********ADICIONAR PASSWORD ENCODER*************
+            }
+
+            Usuario usuarioAtualizado = UsuarioRepository.save(usuario);
+
+            return ResponseEntity.ok(new UsuarioDTO(usuarioAtualizado));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Ocorreu um erro interno ao tentar atualizar o usuário.");
         }
     }
 
