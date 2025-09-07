@@ -2,6 +2,7 @@ package com.fegcocco.emovebackend.controller;
 
 import com.fegcocco.emovebackend.dto.CadastroDTO;
 import com.fegcocco.emovebackend.dto.LoginDTO;
+import com.fegcocco.emovebackend.dto.UpdateUsuarioDTO;
 import com.fegcocco.emovebackend.dto.UsuarioDTO;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
@@ -104,4 +105,46 @@ public class UsuarioController {
         }
     }
 
+    @PutMapping("/usuario/me")
+    public ResponseEntity<?> updateUsuario( @CookieValue(name = "e-move-token") String token, @Valid @RequestBody UpdateUsuarioDTO updateDTO) {
+
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(401).body("Token de autenticação não encontrado.");
+        }
+
+        if (!tokenService.isTokenValid(token)) {
+            return ResponseEntity.status(401).body("Token inválido ou expirado.");
+        }
+
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
+
+            if (usuarioOptional.isEmpty()) {
+                return ResponseEntity.status(404).body("Usuário não encontrado.");
+            }
+
+            Usuario usuario = usuarioOptional.get();
+
+            if (updateDTO.getNome() != null && !updateDTO.getNome().isBlank()) {
+                usuario.setNome(updateDTO.getNome());
+            }
+            if (updateDTO.getEmail() != null && !updateDTO.getEmail().isBlank()) {
+                usuario.setEmail(updateDTO.getEmail());
+            }
+            if (updateDTO.getTelefone() != null && !updateDTO.getTelefone().isBlank()) {
+                usuario.setTelefone(updateDTO.getTelefone());
+            }
+            if (updateDTO.getSenha() != null && !updateDTO.getSenha().isBlank()) {
+                usuario.setSenha(updateDTO.getSenha()); //***********CRIPTOGRAFAR COM PASSWORD ENCODER***********
+            }
+
+            Usuario usuarioAtualizado = UsuarioRepository.save(usuario);
+
+            return ResponseEntity.ok(new UsuarioDTO(usuarioAtualizado));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Erro ao processar o token ou atualizar o usuário.");
+        }
+    }
 }
