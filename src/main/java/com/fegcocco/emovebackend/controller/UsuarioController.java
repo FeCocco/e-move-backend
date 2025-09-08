@@ -57,6 +57,18 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // novo cookie com o mesmo nome, valor nulo e tempo de vida 0.
+        Cookie cookie = new Cookie("e-move-token", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); //expirar o cookie imediatamente
+        // Adiciona o cookie "expirado" à resposta.
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().body("Logout realizado com sucesso.");
+    }
+
     @PostMapping("/cadastro")
     public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody CadastroDTO cadastroDTO) {
 
