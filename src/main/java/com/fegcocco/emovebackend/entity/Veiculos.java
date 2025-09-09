@@ -1,13 +1,16 @@
 package com.fegcocco.emovebackend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "veiculos")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Veiculos {
 
     @Id
@@ -36,4 +39,11 @@ public class Veiculos {
 
     @Column(nullable = false)
     private int autonomia;
+
+    public Veiculos(String marca, String modelo, int autonomia, TipoPlugin tipoPlugin) {
+        this.marca = marca;
+        this.modelo = modelo;
+        this.autonomia = autonomia;
+        this.tipoPlugin = tipoPlugin;
+    }
 }
