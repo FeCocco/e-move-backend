@@ -7,7 +7,7 @@
 
     <groupId>com.emove</groupId>
     <artifactId>emove</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-alpha.2</version>
     <packaging>jar</packaging>
     <name>EMOVE</name>
     <description>Projeto Spring Boot com MySQL</description>
