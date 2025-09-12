@@ -7,7 +7,7 @@
 
     <groupId>com.emove</groupId>
     <artifactId>emove</artifactId>
-    <version>0.1.0-alpha.2</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>EMOVE</name>
     <description>Projeto Spring Boot com MySQL</description>
@@ -21,8 +21,8 @@
 
     <properties>
 
-            <java.version>17</java.version>
-            <lombok.version>1.18.30</lombok.version>
+        <java.version>17</java.version>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencies>
