@@ -1,10 +1,13 @@
 package com.fegcocco.emovebackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "veiculos")
@@ -39,6 +42,10 @@ public class Veiculos {
 
     @Column(nullable = false)
     private int autonomia;
+
+    @ManyToMany(mappedBy = "veiculos")
+    @JsonIgnore // Evita problemas de serialização (loop infinito)
+    private Set<Usuario> usuarios = new HashSet<>();
 
     public Veiculos(String marca, String modelo, int autonomia, TipoPlugin tipoPlugin) {
         this.marca = marca;
