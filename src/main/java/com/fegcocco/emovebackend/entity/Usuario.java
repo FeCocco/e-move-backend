@@ -1,6 +1,9 @@
 package com.fegcocco.emovebackend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jdk.jfr.BooleanFlag;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import java.util.Date;
 import java.util.HashSet;
@@ -8,6 +11,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.lang.NonNull;
 
 @Entity
 @Table(name = "usuarios")
@@ -49,12 +53,19 @@ public class Usuario {
     @CreationTimestamp
     private Date dataCadastro;
 
+    @NotNull
+    @ColumnDefault("true")
+    private boolean ativo = true;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dataExclusao;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "USUARIOS_VEICULOS",
             joinColumns = @JoinColumn(name = "ID_USUARIO"),
             inverseJoinColumns = @JoinColumn(name = "ID_VEICULO")
     )
-    private Set<Veiculos> veiculos = new HashSet<>();
 
+    private Set<Veiculos> veiculos = new HashSet<>();
 }

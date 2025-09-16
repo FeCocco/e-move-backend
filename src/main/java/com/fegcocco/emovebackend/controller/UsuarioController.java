@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -84,6 +85,7 @@ public class UsuarioController {
         novoUsuario.setSexo(cadastroDTO.getSexo());
         novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());
         novoUsuario.setSenha(cadastroDTO.getSenha()); //*********ADICIONAR PASSWORD ENCODER*************
+        novoUsuario.setAtivo(true);
 
 
         Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
@@ -158,6 +160,32 @@ public class UsuarioController {
 
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Ocorreu um erro interno ao tentar atualizar o usuário.");
+        }
+    }
+
+    @DeleteMapping("/usuario/me")
+    public ResponseEntity<?> deleteUsuario(@CookieValue(name = "e-move-token") String token) {
+        if (token == null || !tokenService.isTokenValid(token)) {
+            return ResponseEntity.status(401).body("Token inválido ou expirado.");
+        }
+
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
+
+            if (usuarioOptional.isEmpty()) {
+                return ResponseEntity.status(404).body("Usuário não encontrado.");
+            }
+
+            Usuario usuario = usuarioOptional.get();
+            usuario.setAtivo(false);
+            usuario.setDataExclusao(new Date());
+            UsuarioRepository.save(usuario);
+
+            return ResponseEntity.ok().body("Usuário desativado com sucesso. A conta será excluída permanentemente em 30 dias.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Ocorreu um erro interno ao tentar desativar o usuário.");
         }
     }
 
