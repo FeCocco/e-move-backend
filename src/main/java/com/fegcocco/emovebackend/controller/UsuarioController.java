@@ -30,29 +30,37 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) {
-        Optional<Usuario> userOptional = UsuarioRepository.findByEmail(loginDTO.getEmail());
+        Optional<Usuario> usuarioOptional = UsuarioRepository.findByEmail(loginDTO.getEmail());
 
-        if (userOptional.isEmpty()) {
+        if (usuarioOptional.isEmpty()) {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
 
-        Usuario user = userOptional.get();
+        Usuario usuario = usuarioOptional.get();
 
-        if (loginDTO.getSenha().equals(user.getSenha())) {
-            String token = tokenService.generateToken(user);
+        if (loginDTO.getSenha().equals(usuario.getSenha())) {
+
+            //Reativa o usuário ao fazer o login
+            if (!usuario.isAtivo()) {
+                usuario.setAtivo(true);
+                usuario.setDataExclusao(null);
+                usuario = UsuarioRepository.save(usuario);
+            }
+
+            String token = tokenService.generateToken(usuario);
 
             Cookie cookie = new Cookie("e-move-token", token);
 
             // propriedades de segurança
             cookie.setHttpOnly(true); // Impede acesso via JavaScript
-            cookie.setSecure(false); // Enviar apenas sobre HTTPS (MUDAR EM PROODUCAO)
+            cookie.setSecure(false); // Enviar apenas sobre HTTPS (MUDAR EM PRODUCAO)
             cookie.setPath("/");
             cookie.setMaxAge(24 * 60 * 60); // Expira em 24 horas
             // cookie.setSameSite("Strict"); // Protecao extra contra CSRF (MUDAR EM PROODUCAO)
 
             response.addCookie(cookie);
 
-            return ResponseEntity.ok(new UsuarioDTO(user));
+            return ResponseEntity.ok(new UsuarioDTO(usuario));
         } else {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
