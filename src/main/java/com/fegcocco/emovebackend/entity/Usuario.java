@@ -3,6 +3,9 @@ package com.fegcocco.emovebackend.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,7 +25,7 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id_usuario;
 
     @Column(nullable = false)
     private String nome;
@@ -45,4 +48,13 @@ public class Usuario {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Date dataCadastro;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "USUARIOS_VEICULOS",
+            joinColumns = @JoinColumn(name = "ID_USUARIO"),
+            inverseJoinColumns = @JoinColumn(name = "ID_VEICULO")
+    )
+    private Set<Veiculos> veiculos = new HashSet<>();
+
 }
