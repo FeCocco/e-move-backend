@@ -22,25 +22,21 @@ public class VeiculoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Este método pode retornar a entidade pois não tem lazy loading complexo
     @Transactional(readOnly = true)
     public List<Veiculos> listarTodosVeiculos() {
         return veiculoRepository.findAll();
     }
 
-    // Método principal da mudança: retorna um Set de DTOs
     @Transactional(readOnly = true)
     public Set<VeiculoDTO> listarVeiculosDoUsuario(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Acessamos a lista e convertemos para DTO DENTRO da transação
         return usuario.getVeiculos().stream()
-                .map(VeiculoDTO::new) // Converte cada Veiculo em VeiculoDTO
+                .map(VeiculoDTO::new)
                 .collect(Collectors.toSet());
     }
 
-    // Este método também deve retornar o DTO
     @Transactional
     public Set<VeiculoDTO> adicionarVeiculoParaUsuario(Long usuarioId, Long veiculoId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -56,7 +52,6 @@ public class VeiculoService {
                 .collect(Collectors.toSet());
     }
 
-    // E este também
     @Transactional
     public Set<VeiculoDTO> removerVeiculoDoUsuario(Long usuarioId, Long veiculoId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
