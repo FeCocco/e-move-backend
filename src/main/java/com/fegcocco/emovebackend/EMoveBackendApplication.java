@@ -29,7 +29,6 @@ public class EMoveBackendApplication {
 
             List<Veiculos> veiculosIniciais = Arrays.asList(
                     new Veiculos("Tesla", "Model 3", 491, Veiculos.TipoPlugin.SAE_TIPO_1),
-                    new Veiculos("Nissan", "Leaf", 270, Veiculos.TipoPlugin.CHADEMO),
                     new Veiculos("Chevrolet", "Bolt EV", 416, Veiculos.TipoPlugin.CCS_TIPO_2),
                     new Veiculos("Audi", "E-tron", 357, Veiculos.TipoPlugin.CCS_TIPO_2),
                     new Veiculos("Hyundai", "Kona Eletric", 415, Veiculos.TipoPlugin.SAE_TIPO_1),
