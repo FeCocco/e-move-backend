@@ -1,22 +1,19 @@
 package com.fegcocco.emovebackend.dto;
 
-import com.fegcocco.emovebackend.entity.Veiculos;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class VeiculoDTO {
 
-    private final Long id;
-    private final String marca;
-    private final String modelo;
-    private final int autonomia;
-    private final Veiculos.TipoPlugin tipoPlugin;
+    private Long id;
+    private String marca;
+    private String modelo;
+    private Integer nivelBateria;
+    private int autonomiaTotal;
+    private double autonomiaEstimada;
 
-    public VeiculoDTO(Veiculos veiculo) {
-        this.id = veiculo.getId();
-        this.marca = veiculo.getMarca();
-        this.modelo = veiculo.getModelo();
-        this.autonomia = veiculo.getAutonomia();
-        this.tipoPlugin = veiculo.getTipoPlugin();
-    }
 }
