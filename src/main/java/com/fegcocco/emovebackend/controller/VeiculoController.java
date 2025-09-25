@@ -1,6 +1,8 @@
 package com.fegcocco.emovebackend.controller;
 
+import com.fegcocco.emovebackend.dto.AtualizarNivelBateriaDTO;
 import com.fegcocco.emovebackend.dto.VeiculoDTO;
+import com.fegcocco.emovebackend.entity.UsuarioVeiculo;
 import com.fegcocco.emovebackend.entity.Veiculos;
 import com.fegcocco.emovebackend.service.TokenService;
 import com.fegcocco.emovebackend.service.VeiculoService;
@@ -13,7 +15,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/veiculos")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class VeiculoController {
 
     @Autowired
@@ -24,7 +25,7 @@ public class VeiculoController {
 
     @GetMapping
     public ResponseEntity<List<Veiculos>> listarTodos() {
-        return ResponseEntity.ok(veiculoService.listarTodosVeiculos());
+        return ResponseEntity.ok(veiculoService.getAllVeiculos());
     }
 
     @GetMapping("/meus-veiculos")
@@ -59,6 +60,20 @@ public class VeiculoController {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.removerVeiculoDoUsuario(usuarioId, veiculoId);
             return ResponseEntity.ok(veiculos);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{veiculoId}/bateria")
+    public ResponseEntity<?> atualizarNivelBateria(
+            @CookieValue(name = "e-move-token") String token,
+            @PathVariable Long veiculoId,
+            @RequestBody AtualizarNivelBateriaDTO dto) {
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            UsuarioVeiculo associacao = veiculoService.atualizarNivelBateria(usuarioId, veiculoId, dto.getNivelBateria());
+            return ResponseEntity.ok(associacao);
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
         }
