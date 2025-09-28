@@ -2,7 +2,6 @@ package com.fegcocco.emovebackend.controller;
 
 import com.fegcocco.emovebackend.dto.AtualizarNivelBateriaDTO;
 import com.fegcocco.emovebackend.dto.VeiculoDTO;
-import com.fegcocco.emovebackend.entity.UsuarioVeiculo;
 import com.fegcocco.emovebackend.entity.Veiculos;
 import com.fegcocco.emovebackend.service.TokenService;
 import com.fegcocco.emovebackend.service.VeiculoService;
@@ -72,8 +71,8 @@ public class VeiculoController {
             @RequestBody AtualizarNivelBateriaDTO dto) {
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
-            UsuarioVeiculo associacao = veiculoService.atualizarNivelBateria(usuarioId, veiculoId, dto.getNivelBateria());
-            return ResponseEntity.ok(associacao);
+            VeiculoDTO veiculoAtualizado = veiculoService.atualizarNivelBateria(usuarioId, veiculoId, dto.getNivelBateria());
+            return ResponseEntity.ok(veiculoAtualizado);
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
         }

@@ -81,7 +81,7 @@ public class VeiculoService {
         return listarVeiculosDoUsuario(usuarioId);
     }
 
-    public UsuarioVeiculo atualizarNivelBateria(Long usuarioId, Long veiculoId, Integer nivelBateria) {
+    public VeiculoDTO atualizarNivelBateria(Long usuarioId, Long veiculoId, Integer nivelBateria) {
         if (nivelBateria < 0 || nivelBateria > 100) {
             throw new IllegalArgumentException("O nível da bateria deve ser entre 0 e 100.");
         }
@@ -89,6 +89,18 @@ public class VeiculoService {
         UsuarioVeiculo associacao = usuarioVeiculoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Associação não encontrada para este usuário e veículo."));
         associacao.setNivelBateria(nivelBateria);
-        return usuarioVeiculoRepository.save(associacao);
+        usuarioVeiculoRepository.save(associacao);
+
+        Veiculos veiculo = associacao.getVeiculo();
+        double autonomiaEstimada = veiculo.getAutonomia() * (nivelBateria / 100.0);
+
+        return new VeiculoDTO(
+                veiculo.getId(),
+                veiculo.getMarca(),
+                veiculo.getModelo(),
+                nivelBateria,
+                veiculo.getAutonomia(),
+                autonomiaEstimada
+        );
     }
 }
