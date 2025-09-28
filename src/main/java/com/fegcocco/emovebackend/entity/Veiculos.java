@@ -18,8 +18,6 @@ public class Veiculos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    @Setter
     private Long id;
 
     @Column(nullable = false)
@@ -43,9 +41,9 @@ public class Veiculos {
     @Column(nullable = false)
     private int autonomia;
 
-    @ManyToMany(mappedBy = "veiculos")
+    @OneToMany(mappedBy = "veiculo")
     @JsonIgnore // Evita problemas de serialização (loop infinito)
-    private Set<Usuario> usuarios = new HashSet<>();
+    private Set<UsuarioVeiculo> usuarios = new HashSet<>();
 
     public Veiculos(String marca, String modelo, int autonomia, TipoPlugin tipoPlugin) {
         this.marca = marca;
