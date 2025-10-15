@@ -14,19 +14,20 @@ public class Viagens {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_viagem;
+    @Column(name = "id_viagem")
+    private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_veiculo", nullable = false)
-    private  Veiculos veiculo;
+    private Veiculos veiculo;
 
-    /*@ManyToOne
-    @JoinColumn(name = "id_rota", nullable = false)
-    private Rota rota;*/
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_rota", nullable = false) // força a cahve estrangeira ser criada
+    private Rotas rota;
 
     @Column(name = "km_total", nullable = false)
     private Double kmTotal;

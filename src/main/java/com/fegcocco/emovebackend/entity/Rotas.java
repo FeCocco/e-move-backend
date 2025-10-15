@@ -16,17 +16,17 @@ public class Rotas {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario id_usuario;
+    private Usuario usuario;
 
-    @Column(nullable = true)
+    @Column(name = "nome_rota")
     private String nome_rota;
 
     @Column(nullable = false)
     private double lat;
 
-    @Column(nullable = false)
+    @Column(name = "longi", nullable = false)
     private double longi;
 
-    @Column(nullable = false)
-    private float kmtotal;
+    @Column(name = "km_total", nullable = false)
+    private float kmTotal;
 }

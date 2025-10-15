@@ -51,6 +51,14 @@ public class Usuario {
 
 
     @OneToMany(mappedBy = "usuario")
-    @JsonIgnore
+    @JsonIgnore // evita loops
     private Set<UsuarioVeiculo> veiculos = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // evita loops
+    private Set<Rotas> rotas = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // evita loops
+    private Set<Estacoes> estacoesFavoritas = new HashSet<>();
 }
