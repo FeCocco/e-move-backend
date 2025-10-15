@@ -43,7 +43,7 @@ public class RotaService {
 
     public Set<RotaDTO> listarRotasDoUsuario(Long usuarioId) {
 
-        Set<Rotas> rotas = rotasRepository.findByUsuario_Id_usuario(usuarioId);
+        Set<Rotas> rotas = rotasRepository.findByUsuarioId(usuarioId);
 
         return rotas.stream()
                 .map(RotaDTO::new)

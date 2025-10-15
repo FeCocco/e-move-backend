@@ -51,7 +51,7 @@ public class ViagemService {
 
     public Set<ViagemDTO> listarViagensDoUsuario(Long usuarioId) {
 
-        Set<Viagens> viagens = viagensRepository.findByUsuario_Id_usuario(usuarioId);
+        Set<Viagens> viagens = viagensRepository.findByUsuarioId(usuarioId);
 
         return viagens.stream()
                 .map(ViagemDTO::new)

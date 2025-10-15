@@ -40,7 +40,7 @@ public class EstacaoService {
 
     public Set<EstacaoDTO> listarEstacoesDoUsuario(Long usuarioId) {
 
-        Set<Estacoes> estacoes = estacoesRepository.findByUsuario_Id_usuario(usuarioId);
+        Set<Estacoes> estacoes = estacoesRepository.findByUsuarioId(usuarioId);
 
         return estacoes.stream()
                 .map(EstacaoDTO::new)

@@ -2,6 +2,7 @@ package com.fegcocco.emovebackend.repository;
 
 import com.fegcocco.emovebackend.entity.Viagens;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Set;
@@ -9,6 +10,7 @@ import java.util.Set;
 @Repository
 public interface ViagensRepository extends JpaRepository<Viagens, Long> {
 
-    Set<Viagens> findByUsuario_Id_usuario(Long usuarioId);
+    @Query("SELECT v FROM Viagens v WHERE v.usuario.id_usuario = :usuarioId")
+    Set<Viagens> findByUsuarioId(Long usuarioId);
 
 }
