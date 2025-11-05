@@ -79,7 +79,6 @@ public class UsuarioController {
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(cadastroDTO.getNome());
         novoUsuario.setEmail(cadastroDTO.getEmail());
-        novoUsuario.setCpf(cadastroDTO.getCpf());
         novoUsuario.setTelefone(cadastroDTO.getTelefone());
         novoUsuario.setSexo(cadastroDTO.getSexo());
         novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());

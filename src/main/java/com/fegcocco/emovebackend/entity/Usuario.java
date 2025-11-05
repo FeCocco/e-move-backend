@@ -30,9 +30,6 @@ public class Usuario {
     @Column(nullable = false)
     private String nome;
 
-    @Column(unique = true, nullable = false)
-    private String cpf;
-
     @Column(nullable = false)
     private Date dataNascimento;
 

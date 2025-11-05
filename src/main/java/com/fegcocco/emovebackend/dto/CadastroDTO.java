@@ -18,9 +18,6 @@ public class CadastroDTO {
     @Email(message = "O formato do e-mail é inválido.")
     private String email;
 
-    @NotBlank(message = "O CPF não pode estar em branco.")
-    private String cpf;
-
     @NotBlank(message = "O telefone não pode estar em branco.")
     @Size(min = 10, max = 11, message = "O telefone deve ter até 11 dígitos")
     private String telefone;
