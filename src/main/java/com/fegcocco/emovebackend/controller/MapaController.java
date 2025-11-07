@@ -1,6 +1,9 @@
 package com.fegcocco.emovebackend.controller;
 
 import com.fegcocco.emovebackend.dto.GeocodingDTO;
+// IMPORTS ADICIONADOS
+import com.fegcocco.emovebackend.dto.directions.LocationIQDirectionsResponseDTO;
+// FIM DOS IMPORTS ADICIONADOS
 import com.fegcocco.emovebackend.service.GeocodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +30,19 @@ public class MapaController {
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/directions")
+    public ResponseEntity<?> getDirectRoute(
+            @RequestParam double oLat, @RequestParam double oLon, // Origem
+            @RequestParam double dLat, @RequestParam double dLon  // Destino
+    ) {
+        try {
+            LocationIQDirectionsResponseDTO results = geocodingService.getDirectRoute(oLat, oLon, dLat, dLon);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

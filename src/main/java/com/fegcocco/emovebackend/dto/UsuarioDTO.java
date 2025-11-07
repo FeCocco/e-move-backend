@@ -14,7 +14,6 @@ public class UsuarioDTO {
     private String telefone;
     private Date dataCadastro;
     private Usuario.Sexo sexo;
-    private String cpf;
     private Date dataNascimento;
 
     public UsuarioDTO(Usuario usuario) {
@@ -23,7 +22,6 @@ public class UsuarioDTO {
         this.telefone = usuario.getTelefone();
         this.dataCadastro = usuario.getDataCadastro();
         this.sexo = usuario.getSexo();
-        this.cpf = usuario.getCpf();
         this.dataNascimento = usuario.getDataNascimento();
     }
 }
