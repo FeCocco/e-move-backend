@@ -17,22 +17,21 @@ public class UsuarioVeiculo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("usuarioId")
-    // Adicionamos insertable = false e updatable = false para resolver o conflito
+    // insertable = false e updatable = false para resolver o conflito
     @JoinColumn(name = "ID_USUARIO", insertable = false, updatable = false)
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("veiculoId")
-    // Adicionamos insertable = false e updatable = false para resolver o conflito
+    // insertable = false e updatable = false para resolver o conflito
     @JoinColumn(name = "ID_VEICULO", insertable = false, updatable = false)
     private Veiculos veiculo;
 
     @Column(name = "nivel_bateria")
     private Integer nivelBateria;
 
-    // Construtor adicional para facilitar a criação no serviço
     public UsuarioVeiculo(Usuario usuario, Veiculos veiculo, Integer nivelBateria) {
-        this.id = new UsuarioVeiculoId(usuario.getId_usuario(), veiculo.getId());
+        this.id = new UsuarioVeiculoId(usuario.getIdUsuario(), veiculo.getId());
         this.usuario = usuario;
         this.veiculo = veiculo;
         this.nivelBateria = nivelBateria;
