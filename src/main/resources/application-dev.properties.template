@@ -15,6 +15,11 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
 jwt.secret=[SEU_TOKEN_AQUI] <-- IMPORTANTE
 jwt.expiration=86400000 <-- TEMPO DE EXPIRACAO DI TOKEN
 
+# LocationIQ API Configuration
+locationiq.api.key=YOUR_API_KEY
+locationiq.api.url=https://us1.locationiq.com/v1/search
+locationiq.api.directions.url=https://us1.locationiq.com/v1/directions/driving/
+
 # Tempo máximo que a aplicação vai esperar por uma conexão do banco (em milissegundos).
 spring.datasource.hikari.connection-timeout=3000
 

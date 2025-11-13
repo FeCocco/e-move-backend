@@ -33,7 +33,7 @@ public class TokenService {
 
     public String generateToken(Usuario usuario) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("id", usuario.getId_usuario());
+        claims.put("id", usuario.getIdUsuario());
         claims.put("nome", usuario.getNome());
         claims.put("email", usuario.getEmail());
 
