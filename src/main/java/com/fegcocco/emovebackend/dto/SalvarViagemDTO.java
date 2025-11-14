@@ -8,5 +8,13 @@ public class SalvarViagemDTO {
     private Double kmTotal;
     private Double co2Preservado;
 
-    //adicionar mais campos aqui como nomeDaRota, latOrigem/longiOrigem, latDestino/longDestino
+    private Double latOrigem;
+    private Double longiOrigem;
+
+    private Double latDestino;
+    private Double longiDestino;
+
+    boolean favorita;
+
+    private String apelido;
 }

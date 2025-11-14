@@ -39,6 +39,12 @@ public class ViagemService {
         novaViagem.setKmTotal(dto.getKmTotal());
         novaViagem.setCo2Preservado(dto.getCo2Preservado());
         novaViagem.setDtViagem(LocalDate.now());
+        novaViagem.setLatOrigem(dto.getLatOrigem());
+        novaViagem.setLongiOrigem(dto.getLongiOrigem());
+        novaViagem.setLatDestino(dto.getLatDestino());
+        novaViagem.setLongiDestino(dto.getLongiDestino());
+        novaViagem.setFavorita(dto.isFavorita());
+        novaViagem.setApelido(dto.getApelido());
 
         return viagemRepository.save(novaViagem);
     }
