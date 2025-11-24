@@ -52,4 +52,19 @@ public class ViagemService {
     public List<Viagens> listarViagensPorUsuario(Long usuarioId) {
         return viagemRepository.findByUsuario_IdUsuarioOrderByDtViagemDesc(usuarioId);
     }
+
+    public Viagens atualizarFavorito(Long usuarioId, Long viagemId, com.fegcocco.emovebackend.dto.AtualizarViagemDTO dto) {
+        Viagens viagem = viagemRepository.findById(viagemId)
+                .orElseThrow(() -> new RuntimeException("Viagem não encontrada"));
+
+        //verifica se a viagem pertence ao usuário logado
+        if (!viagem.getUsuario().getIdUsuario().equals(usuarioId)) {
+            throw new RuntimeException("Acesso negado a esta viagem.");
+        }
+
+        viagem.setFavorita(dto.isFavorita());
+        viagem.setApelido(dto.getApelido());
+
+        return viagemRepository.save(viagem);
+    }
 }

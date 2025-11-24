@@ -1,5 +1,6 @@
 package com.fegcocco.emovebackend.controller;
 
+import com.fegcocco.emovebackend.dto.AtualizarViagemDTO;
 import com.fegcocco.emovebackend.dto.SalvarViagemDTO;
 import com.fegcocco.emovebackend.entity.Viagens;
 import com.fegcocco.emovebackend.service.TokenService;
@@ -42,6 +43,20 @@ public class ViagemController {
             return ResponseEntity.ok(viagens);
         } catch (Exception e) {
             return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{viagemId}")
+    public ResponseEntity<?> atualizarViagem(
+            @CookieValue(name = "e-move-token") String token,
+            @PathVariable Long viagemId,
+            @RequestBody AtualizarViagemDTO dto) {
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            Viagens viagemAtualizada = viagemService.atualizarFavorito(usuarioId, viagemId, dto);
+            return ResponseEntity.ok(viagemAtualizada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
