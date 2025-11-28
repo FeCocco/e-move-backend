@@ -49,7 +49,11 @@ public class ViagemService {
         return viagemRepository.save(novaViagem);
     }
 
-    public List<Viagens> listarViagensPorUsuario(Long usuarioId) {
+    public List<Viagens> listarViagensPorUsuario(Long usuarioId, LocalDate inicio, LocalDate fim) {
+        if (inicio != null && fim != null) {
+            return viagemRepository.findByUsuario_IdUsuarioAndDtViagemBetweenOrderByDtViagemDesc(usuarioId, inicio, fim);
+        }
+        // Se não passar data, retorna tudo
         return viagemRepository.findByUsuario_IdUsuarioOrderByDtViagemDesc(usuarioId);
     }
 
