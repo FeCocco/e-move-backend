@@ -39,11 +39,36 @@ public class ViagemService {
         novaViagem.setKmTotal(dto.getKmTotal());
         novaViagem.setCo2Preservado(dto.getCo2Preservado());
         novaViagem.setDtViagem(LocalDate.now());
+        novaViagem.setLatOrigem(dto.getLatOrigem());
+        novaViagem.setLongiOrigem(dto.getLongiOrigem());
+        novaViagem.setLatDestino(dto.getLatDestino());
+        novaViagem.setLongiDestino(dto.getLongiDestino());
+        novaViagem.setFavorita(dto.isFavorita());
+        novaViagem.setApelido(dto.getApelido());
 
         return viagemRepository.save(novaViagem);
     }
 
-    public List<Viagens> listarViagensPorUsuario(Long usuarioId) {
+    public List<Viagens> listarViagensPorUsuario(Long usuarioId, LocalDate inicio, LocalDate fim) {
+        if (inicio != null && fim != null) {
+            return viagemRepository.findByUsuario_IdUsuarioAndDtViagemBetweenOrderByDtViagemDesc(usuarioId, inicio, fim);
+        }
+        // Se não passar data, retorna tudo
         return viagemRepository.findByUsuario_IdUsuarioOrderByDtViagemDesc(usuarioId);
+    }
+
+    public Viagens atualizarFavorito(Long usuarioId, Long viagemId, com.fegcocco.emovebackend.dto.AtualizarViagemDTO dto) {
+        Viagens viagem = viagemRepository.findById(viagemId)
+                .orElseThrow(() -> new RuntimeException("Viagem não encontrada"));
+
+        //verifica se a viagem pertence ao usuário logado
+        if (!viagem.getUsuario().getIdUsuario().equals(usuarioId)) {
+            throw new RuntimeException("Acesso negado a esta viagem.");
+        }
+
+        viagem.setFavorita(dto.isFavorita());
+        viagem.setApelido(dto.getApelido());
+
+        return viagemRepository.save(viagem);
     }
 }

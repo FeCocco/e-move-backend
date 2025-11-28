@@ -24,10 +24,6 @@ public class Viagens {
     @JoinColumn(name = "id_veiculo", nullable = false)
     private  Veiculos veiculo;
 
-    /*@ManyToOne
-    @JoinColumn(name = "id_rota", nullable = false)
-    private Rota rota;*/
-
     @Column(name = "km_total", nullable = false)
     private Double kmTotal;
 
@@ -37,4 +33,21 @@ public class Viagens {
     @Column(name = "dt_viagem", nullable = false)
     private LocalDate dtViagem;
 
+    @Column(name = "lat_origem", nullable = false)
+    private Double latOrigem;
+
+    @Column(name = "longi_origem", nullable = false)
+    private Double longiOrigem;
+
+    @Column(name = "lat_destino", nullable = false)
+    private Double latDestino;
+
+    @Column(name = "longI_destino", nullable = false)
+    private Double longiDestino;
+
+    @Column(name = "favorita", nullable = false)
+    boolean favorita;
+
+    @Column(name = "apelido")
+    private String apelido;
 }
