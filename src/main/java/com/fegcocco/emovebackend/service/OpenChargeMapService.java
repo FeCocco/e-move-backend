@@ -30,6 +30,28 @@ public class OpenChargeMapService {
                         .queryParam("distanceunit", "KM")
                         .queryParam("maxresults", 10)
                         .queryParam("key", apiKey)
+                        .queryParam("includecomments", true)
+                        .build())
+                .retrieve()
+                .bodyToFlux(StationDTO.class)
+                .collectList()
+                .block();
+    }
+
+    public List<StationDTO> buscarEstacoesPorIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        String idsString = String.join(",", ids.stream().map(String::valueOf).toList());
+
+        return this.webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/poi/")
+                        .queryParam("output", "json")
+                        .queryParam("chargepointid", idsString)
+                        .queryParam("key", apiKey)
+                        .queryParam("includecomments", true)
                         .build())
                 .retrieve()
                 .bodyToFlux(StationDTO.class)
