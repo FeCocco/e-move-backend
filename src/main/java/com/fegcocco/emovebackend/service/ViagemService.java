@@ -51,10 +51,10 @@ public class ViagemService {
 
     public List<Viagens> listarViagensPorUsuario(Long usuarioId, LocalDate inicio, LocalDate fim) {
         if (inicio != null && fim != null) {
-            return viagemRepository.findByUsuario_IdUsuarioAndDtViagemBetweenOrderByDtViagemDesc(usuarioId, inicio, fim);
+            return viagemRepository.findByUsuario_IdUsuarioAndDtViagemBetweenOrderByDtViagemDescIdViagemDesc(usuarioId, inicio, fim);
         }
         // Se não passar data, retorna tudo
-        return viagemRepository.findByUsuario_IdUsuarioOrderByDtViagemDesc(usuarioId);
+        return viagemRepository.findByUsuario_IdUsuarioOrderByDtViagemDescIdViagemDesc(usuarioId);
     }
 
     public Viagens atualizarFavorito(Long usuarioId, Long viagemId, com.fegcocco.emovebackend.dto.AtualizarViagemDTO dto) {

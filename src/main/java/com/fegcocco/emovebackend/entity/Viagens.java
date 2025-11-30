@@ -14,7 +14,8 @@ public class Viagens {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_viagem;
+    @Column(name = "id_viagem")
+    private Long idViagem;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)

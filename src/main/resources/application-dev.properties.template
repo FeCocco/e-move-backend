@@ -20,6 +20,10 @@ locationiq.api.key=YOUR_API_KEY
 locationiq.api.url=https://us1.locationiq.com/v1/search
 locationiq.api.directions.url=https://us1.locationiq.com/v1/directions/driving/
 
+# OpenChargeMap API
+openchargemap.api.key=YOUR_API_KEY
+openchargemap.api.url=https://api.openchargemap.io/v3/poi
+
 # Tempo máximo que a aplicação vai esperar por uma conexão do banco (em milissegundos).
 spring.datasource.hikari.connection-timeout=3000
 
