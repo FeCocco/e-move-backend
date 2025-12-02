@@ -25,7 +25,8 @@ public class Usuario {
 
     public enum Sexo {
         MASCULINO,
-        FEMININO
+        FEMININO,
+        OUTROS
     }
 
     @Column(nullable = false)
