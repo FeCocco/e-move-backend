@@ -22,10 +22,10 @@ public class CadastroDTO {
     @Size(min = 10, max = 11, message = "O telefone deve ter até 11 dígitos")
     private String telefone;
 
-    //*****Verificar @NotBlank*****
+    @NotNull(message = "O Campo gênero não pode estar vazio.")
     private Usuario.Sexo sexo;
 
-    //*****Verificar @NotBlank*****
+    @NotNull(message = "O Campo Data de Nascimento não pode estar vazio.")
     private Date dataNascimento;
 
     @NotBlank(message = "A senha não pode estar em branco.")

@@ -143,6 +143,7 @@ public class UsuarioController {
             usuario.setNome(updateDTO.getNome());
             usuario.setEmail(updateDTO.getEmail());
             usuario.setTelefone(updateDTO.getTelefone());
+            usuario.setSexo(updateDTO.getSexo());
 
             if (updateDTO.getSenha() != null && !updateDTO.getSenha().isBlank()) {
                 if (updateDTO.getSenha().length() < 8) {

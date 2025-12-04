@@ -1,7 +1,9 @@
 package com.fegcocco.emovebackend.dto;
 
+import com.fegcocco.emovebackend.entity.Usuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +22,9 @@ public class UpdateUsuarioDTO {
     @NotBlank(message = "O telefone não pode estar em branco.")
     @Size(min = 10, max = 11, message = "O telefone deve ter até 11 dígitos")
     private String telefone;
+
+    @NotNull(message = "O Campo gênero não pode estar vazio.")
+    private Usuario.Sexo sexo;
 
     private String senha;
 }
