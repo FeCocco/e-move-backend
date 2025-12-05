@@ -48,7 +48,6 @@ public class Usuario {
     @CreationTimestamp
     private Date dataCadastro;
 
-
     @OneToMany(mappedBy = "usuario")
     @JsonIgnore
     private Set<UsuarioVeiculo> veiculos = new HashSet<>();

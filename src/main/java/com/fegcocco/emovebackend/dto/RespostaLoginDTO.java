@@ -8,5 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class RespostaLoginDTO {
-    private String token;
+    private String nome;
+    private String email;
 }

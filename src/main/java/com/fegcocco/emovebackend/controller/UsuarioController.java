@@ -1,9 +1,6 @@
 package com.fegcocco.emovebackend.controller;
 
-import com.fegcocco.emovebackend.dto.CadastroDTO;
-import com.fegcocco.emovebackend.dto.LoginDTO;
-import com.fegcocco.emovebackend.dto.UpdateUsuarioDTO;
-import com.fegcocco.emovebackend.dto.UsuarioDTO;
+import com.fegcocco.emovebackend.dto.*;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 import com.fegcocco.emovebackend.service.TokenService;
@@ -12,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -27,9 +25,15 @@ public class UsuarioController {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) {
-        Optional<Usuario> userOptional = UsuarioRepository.findByEmail(loginDTO.getEmail());
+    public ResponseEntity<?> login(
+            @Valid @RequestBody LoginDTO data,
+            HttpServletResponse response) {
+
+        Optional<Usuario> userOptional = UsuarioRepository.findByEmail(data.getEmail());
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
@@ -37,21 +41,20 @@ public class UsuarioController {
 
         Usuario user = userOptional.get();
 
-        if (loginDTO.getSenha().equals(user.getSenha())) {
+        if (passwordEncoder.matches(data.getSenha(), user.getSenha())) {
+
             String token = tokenService.generateToken(user);
 
+            // Configuração do Cookie
             Cookie cookie = new Cookie("e-move-token", token);
-
-            // propriedades de segurança
-            cookie.setHttpOnly(true); // Impede acesso via JavaScript
-            cookie.setSecure(false); // Enviar apenas sobre HTTPS (MUDAR EM PROODUCAO)
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false); // Mudar para true em produção (HTTPS)
             cookie.setPath("/");
-            cookie.setMaxAge(24 * 60 * 60); // Expira em 24 horas
-            // cookie.setSameSite("Strict"); // Protecao extra contra CSRF (MUDAR EM PROODUCAO)
+            cookie.setMaxAge(24 * 60 * 60);
 
             response.addCookie(cookie);
 
-            return ResponseEntity.ok(new UsuarioDTO(user));
+            return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail()));
         } else {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
@@ -70,19 +73,19 @@ public class UsuarioController {
     }
 
     @PostMapping("/cadastro")
-    public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody CadastroDTO cadastroDTO) {
+    public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody CadastroDTO data) {
 
-        if (UsuarioRepository.findByEmail(cadastroDTO.getEmail()).isPresent()) {
+        if (UsuarioRepository.findByEmail(data.getEmail()).isPresent()) {
             return ResponseEntity.status(409).body("Este e-mail já está em uso.");
         }
 
         Usuario novoUsuario = new Usuario();
-        novoUsuario.setNome(cadastroDTO.getNome());
-        novoUsuario.setEmail(cadastroDTO.getEmail());
-        novoUsuario.setTelefone(cadastroDTO.getTelefone());
-        novoUsuario.setSexo(cadastroDTO.getSexo());
-        novoUsuario.setDataNascimento(cadastroDTO.getDataNascimento());
-        novoUsuario.setSenha(cadastroDTO.getSenha()); //*********ADICIONAR PASSWORD ENCODER*************
+        novoUsuario.setNome(data.getNome());
+        novoUsuario.setEmail(data.getEmail());
+        novoUsuario.setTelefone(data.getTelefone());
+        novoUsuario.setSexo(data.getSexo());
+        novoUsuario.setDataNascimento(data.getDataNascimento());
+        novoUsuario.setSenha(passwordEncoder.encode(data.getSenha()));
 
 
         Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
@@ -117,7 +120,9 @@ public class UsuarioController {
     }
 
     @PutMapping("/usuario/me")
-    public ResponseEntity<?> updateUsuario(@CookieValue(name = "e-move-token") String token, @Valid @RequestBody UpdateUsuarioDTO updateDTO) {
+    public ResponseEntity<?> updateUsuario(
+            @CookieValue(name = "e-move-token") String token,
+            @Valid @RequestBody UpdateUsuarioDTO data) {
 
         if (token == null || !tokenService.isTokenValid(token)) {
             return ResponseEntity.status(401).body("Token inválido ou expirado.");
@@ -133,23 +138,23 @@ public class UsuarioController {
 
             Usuario usuario = usuarioOptional.get();
 
-            if (!usuario.getEmail().equals(updateDTO.getEmail())) {
+            if (!usuario.getEmail().equals(data.getEmail())) {
 
-                if (UsuarioRepository.findByEmail(updateDTO.getEmail()).isPresent()) {
+                if (UsuarioRepository.findByEmail(data.getEmail()).isPresent()) {
                     return ResponseEntity.status(409).body("Este e-mail já está em uso por outra conta.");
                 }
             }
 
-            usuario.setNome(updateDTO.getNome());
-            usuario.setEmail(updateDTO.getEmail());
-            usuario.setTelefone(updateDTO.getTelefone());
-            usuario.setSexo(updateDTO.getSexo());
+            usuario.setNome(data.getNome());
+            usuario.setEmail(data.getEmail());
+            usuario.setTelefone(data.getTelefone());
+            usuario.setSexo(data.getSexo());
 
-            if (updateDTO.getSenha() != null && !updateDTO.getSenha().isBlank()) {
-                if (updateDTO.getSenha().length() < 8) {
+            if (data.getSenha() != null && !data.getSenha().isBlank()) {
+                if (data.getSenha().length() < 8) {
                     return ResponseEntity.status(400).body("A nova senha deve ter no mínimo 8 caracteres.");
                 }
-                usuario.setSenha(updateDTO.getSenha());//*********ADICIONAR PASSWORD ENCODER*************
+                usuario.setSenha(passwordEncoder.encode(data.getSenha()));
             }
 
             Usuario usuarioAtualizado = UsuarioRepository.save(usuario);

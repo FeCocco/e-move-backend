@@ -26,5 +26,6 @@ public class UpdateUsuarioDTO {
     @NotNull(message = "O Campo gênero não pode estar vazio.")
     private Usuario.Sexo sexo;
 
+    @Size(min = 8, message = "A nova senha deve ter no mínimo 8 caracteres.")
     private String senha;
 }
