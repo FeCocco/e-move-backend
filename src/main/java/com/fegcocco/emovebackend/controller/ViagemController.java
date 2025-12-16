@@ -22,10 +22,20 @@ public class ViagemController {
     @Autowired
     private TokenService tokenService;
 
+    private String extractToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
     @PostMapping
     public ResponseEntity<?> salvarViagem(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody SalvarViagemDTO dto) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Viagens viagemSalva = viagemService.salvarViagem(usuarioId, dto);
@@ -37,13 +47,15 @@ public class ViagemController {
 
     @GetMapping
     public ResponseEntity<?> listarViagensDoUsuario(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestParam(required = false) LocalDate inicio,
             @RequestParam(required = false) LocalDate fim
     ) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
-            // Passa os parâmetros para o serviço
             List<Viagens> viagens = viagemService.listarViagensPorUsuario(usuarioId, inicio, fim);
             return ResponseEntity.ok(viagens);
         } catch (Exception e) {
@@ -53,9 +65,12 @@ public class ViagemController {
 
     @PatchMapping("/{viagemId}")
     public ResponseEntity<?> atualizarViagem(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long viagemId,
             @RequestBody AtualizarViagemDTO dto) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Viagens viagemAtualizada = viagemService.atualizarFavorito(usuarioId, viagemId, dto);

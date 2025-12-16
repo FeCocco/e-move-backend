@@ -4,7 +4,6 @@ import com.fegcocco.emovebackend.dto.*;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 import com.fegcocco.emovebackend.service.TokenService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,31 +44,10 @@ public class UsuarioController {
 
             String token = tokenService.generateToken(user);
 
-            // Configuração do Cookie
-            Cookie cookie = new Cookie("e-move-token", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false); // Mudar para true em produção (HTTPS)
-            cookie.setPath("/");
-            cookie.setMaxAge(24 * 60 * 60);
-
-            response.addCookie(cookie);
-
-            return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail()));
+            return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail(), token));
         } else {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        // novo cookie com o mesmo nome, valor nulo e tempo de vida 0.
-        Cookie cookie = new Cookie("e-move-token", null);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); //expirar o cookie imediatamente
-        // Adiciona o cookie "expirado" à resposta.
-        response.addCookie(cookie);
-
-        return ResponseEntity.ok().body("Logout realizado com sucesso.");
     }
 
     @PostMapping("/cadastro")
@@ -94,11 +72,14 @@ public class UsuarioController {
     }
 
     @GetMapping("/usuario/me")
-    public ResponseEntity<?> getUsuarioLogado(@CookieValue(name = "e-move-token", required = false) String token) {
+    public ResponseEntity<?> getUsuarioLogado(@RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(401).body("Token de autenticação não encontrado.");
+        // 1. Verificar se o header existe e começa com Bearer
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Token não fornecido ou formato inválido.");
         }
+
+        String token = authHeader.substring(7);
 
         if (!tokenService.isTokenValid(token)) {
             return ResponseEntity.status(401).body("Token inválido ou expirado.");
@@ -121,10 +102,17 @@ public class UsuarioController {
 
     @PutMapping("/usuario/me")
     public ResponseEntity<?> updateUsuario(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @Valid @RequestBody UpdateUsuarioDTO data) {
 
-        if (token == null || !tokenService.isTokenValid(token)) {
+        // 1. Verificar se o header existe e começa com Bearer
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Token não fornecido ou formato inválido.");
+        }
+
+        String token = authHeader.substring(7);
+
+        if (!tokenService.isTokenValid(token)) {
             return ResponseEntity.status(401).body("Token inválido ou expirado.");
         }
 

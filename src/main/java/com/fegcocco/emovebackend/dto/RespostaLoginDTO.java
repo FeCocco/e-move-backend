@@ -10,4 +10,5 @@ import lombok.Setter;
 public class RespostaLoginDTO {
     private String nome;
     private String email;
+    private String token;
 }

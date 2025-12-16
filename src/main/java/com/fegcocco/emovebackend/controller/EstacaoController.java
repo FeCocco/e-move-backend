@@ -27,25 +27,32 @@ public class EstacaoController {
     @Autowired
     private TokenService tokenService;
 
+    private String extractToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
     @GetMapping("/proximas")
     public ResponseEntity<List<StationDTO>> buscarProximas(
             @RequestParam Double lat,
             @RequestParam Double lon,
             @RequestParam(defaultValue = "50") Double raio) {
+        // Esta rota é pública ou não precisa de usuário, mantemos como está
         return ResponseEntity.ok(ocmService.buscarEstacoesProximas(lat, lon, raio));
     }
 
-    // Favoritar
     @PostMapping("/{stationId}/favorito")
     public ResponseEntity<?> favoritar(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long stationId) {
 
-        System.out.println(">>> Requisição chegou no controller. StationID: " + stationId); // LOG DE DEBUG
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
 
+        try {
             Long userId = tokenService.getUserIdFromToken(token);
-            System.out.println(">>> User ID extraído: " + userId); // LOG DE DEBUG
-
             if (estacaoRepository.findByUsuario_IdUsuarioAndStationId(userId, stationId).isPresent()) {
                 return ResponseEntity.badRequest().body("Estação já favoritada.");
             }
@@ -54,31 +61,43 @@ public class EstacaoController {
             estacaoRepository.save(new Estacoes(stationId, usuario));
 
             return ResponseEntity.ok().build();
-
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Erro de autenticação.");
+        }
     }
 
-    // Desfavoritar
     @DeleteMapping("/{stationId}/favorito")
     public ResponseEntity<?> desfavoritar(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long stationId) {
-        Long userId = tokenService.getUserIdFromToken(token);
 
-        estacaoRepository.findByUsuario_IdUsuarioAndStationId(userId, stationId)
-                .ifPresent(estacaoRepository::delete);
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
 
-        return ResponseEntity.ok().build();
+        try {
+            Long userId = tokenService.getUserIdFromToken(token);
+            estacaoRepository.findByUsuario_IdUsuarioAndStationId(userId, stationId)
+                    .ifPresent(estacaoRepository::delete);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Erro de autenticação.");
+        }
     }
 
     @GetMapping("/favoritas")
-    public ResponseEntity<List<StationDTO>> listarFavoritas(@CookieValue(name = "e-move-token") String token) {
-        Long userId = tokenService.getUserIdFromToken(token);
+    public ResponseEntity<?> listarFavoritas(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
 
-        List<Long> stationIds = estacaoRepository.findByUsuario_IdUsuario(userId)
-                .stream().map(Estacoes::getStationId).collect(Collectors.toList());
+        try {
+            Long userId = tokenService.getUserIdFromToken(token);
+            List<Long> stationIds = estacaoRepository.findByUsuario_IdUsuario(userId)
+                    .stream().map(Estacoes::getStationId).collect(Collectors.toList());
 
-        List<StationDTO> detalhes = ocmService.buscarEstacoesPorIds(stationIds);
-
-        return ResponseEntity.ok(detalhes);
+            List<StationDTO> detalhes = ocmService.buscarEstacoesPorIds(stationIds);
+            return ResponseEntity.ok(detalhes);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Erro de autenticação.");
+        }
     }
 }

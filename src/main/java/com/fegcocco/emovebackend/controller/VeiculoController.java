@@ -22,26 +22,39 @@ public class VeiculoController {
     @Autowired
     private TokenService tokenService;
 
+    private String extractToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
     @GetMapping
     public ResponseEntity<List<Veiculos>> listarTodos() {
         return ResponseEntity.ok(veiculoService.getAllVeiculos());
     }
 
     @GetMapping("/meus-veiculos")
-    public ResponseEntity<?> listarVeiculosDoUsuario(@CookieValue(name = "e-move-token") String token) {
+    public ResponseEntity<?> listarVeiculosDoUsuario(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.listarVeiculosDoUsuario(usuarioId);
             return ResponseEntity.ok(veiculos);
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("Token inválido ou expirado: " + e.getMessage());
+            return ResponseEntity.status(401).body("Token inválido ou expirado.");
         }
     }
 
     @PostMapping("/meus-veiculos/{veiculoId}")
     public ResponseEntity<?> adicionarVeiculo(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long veiculoId) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.adicionarVeiculoParaUsuario(usuarioId, veiculoId);
@@ -53,8 +66,11 @@ public class VeiculoController {
 
     @DeleteMapping("/meus-veiculos/{veiculoId}")
     public ResponseEntity<?> removerVeiculo(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long veiculoId) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.removerVeiculoDoUsuario(usuarioId, veiculoId);
@@ -66,9 +82,12 @@ public class VeiculoController {
 
     @PutMapping("/{veiculoId}/bateria")
     public ResponseEntity<?> atualizarNivelBateria(
-            @CookieValue(name = "e-move-token") String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long veiculoId,
             @RequestBody AtualizarNivelBateriaDTO dto) {
+        String token = extractToken(authHeader);
+        if (token == null) return ResponseEntity.status(401).body("Token não fornecido ou inválido.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             VeiculoDTO veiculoAtualizado = veiculoService.atualizarNivelBateria(usuarioId, veiculoId, dto.getNivelBateria());
