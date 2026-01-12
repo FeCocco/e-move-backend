@@ -488,10 +488,10 @@ Este projeto ainda está definindo sua licença. Mais informações em breve.
 - [x] **Autenticação JWT** - Sistema completo implementado
 - [x] **CRUD de Veículos** - Garagem virtual funcional
 - [x] **Base de Dados** - 29+ veículos pré-cadastrados
-- [ ] **API de Rotas** - Integração OSRM/OpenRouteService
-- [ ] **API de Estações** - Integração OpenChargeMap
-- [ ] **Sistema de Viagens** - Histórico e métricas
-- [ ] **Password Encoding** - BCrypt para senhas
+- [x] **API de Rotas** - Integração OSRM/OpenRouteService
+- [x] **API de Estações** - Integração OpenChargeMap
+- [x] **Sistema de Viagens** - Histórico e métricas
+- [x] **Password Encoding** - BCrypt para senhas
 - [ ] **Rate Limiting** - Proteção contra spam
 - [ ] **API Documentation** - Swagger/OpenAPI
 - [ ] **Monitoring** - Health checks e métricas
@@ -505,6 +505,6 @@ Este projeto ainda está definindo sua licença. Mais informações em breve.
 
 *API construída com ⚡ pela equipe e-Move*
 
-**Versão:** `0.2.0-alpha.1` | **Java:** `17` | **Spring Boot:** `3.3.3`
+**Java:** `17` | **Spring Boot:** `3.3.3`
 
 </div>
