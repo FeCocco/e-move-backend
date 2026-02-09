@@ -4,11 +4,9 @@ import com.fegcocco.emovebackend.dto.*;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 import com.fegcocco.emovebackend.service.TokenService;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -28,59 +26,36 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @Valid @RequestBody LoginDTO data,
-            HttpServletResponse response) {
+    // Metodo auxiliar para pegar o token do Header
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
+    }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDTO data) {
         Optional<Usuario> userOptional = UsuarioRepository.findByEmail(data.getEmail());
 
-        if (userOptional.isEmpty()) {
+        if (userOptional.isEmpty() || !passwordEncoder.matches(data.getSenha(), userOptional.get().getSenha())) {
             return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
         }
 
         Usuario user = userOptional.get();
+        String token = tokenService.generateToken(user);
 
-        if (passwordEncoder.matches(data.getSenha(), user.getSenha())) {
-
-            String token = tokenService.generateToken(user);
-
-            // Configuração do Cookie
-            ResponseCookie cookie = ResponseCookie.from("e-move-token", token)
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(24 * 60 * 60)
-                    .sameSite("None") //para Cross-Site (Vercel -> Render)
-                    .build();
-
-            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-            return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail()));
-        } else {
-            return ResponseEntity.status(401).body("E-mail ou senha inválidos.");
-        }
+        return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail(), token));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        // novo cookie com o mesmo nome, valor nulo e tempo de vida 0.
-        ResponseCookie cookie = ResponseCookie.from("e-move-token", "")
-                .httpOnly(true)
-                .secure(true) //
-                .path("/")
-                .maxAge(0)
-                .sameSite("None")
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
+    public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body("Logout realizado com sucesso.");
     }
 
     @PostMapping("/cadastro")
     public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody CadastroDTO data) {
-
         if (UsuarioRepository.findByEmail(data.getEmail()).isPresent()) {
             return ResponseEntity.status(409).body("Este e-mail já está em uso.");
         }
@@ -93,45 +68,38 @@ public class UsuarioController {
         novoUsuario.setDataNascimento(data.getDataNascimento());
         novoUsuario.setSenha(passwordEncoder.encode(data.getSenha()));
 
-
         Usuario usuarioSalvo = UsuarioRepository.save(novoUsuario);
-
         return ResponseEntity.status(201).body(new UsuarioDTO(usuarioSalvo));
     }
 
     @GetMapping("/usuario/me")
-    public ResponseEntity<?> getUsuarioLogado(@CookieValue(name = "e-move-token", required = false) String token) {
+    public ResponseEntity<?> getUsuarioLogado(HttpServletRequest request) {
+        String token = extractToken(request);
 
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(401).body("Token de autenticação não encontrado.");
-        }
-
-        if (!tokenService.isTokenValid(token)) {
-            return ResponseEntity.status(401).body("Token inválido ou expirado.");
-        }
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+        if (!tokenService.isTokenValid(token)) return ResponseEntity.status(401).body("Token inválido ou expirado.");
 
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
 
+            // CORREÇÃO: Usando if/else para evitar erro de tipos incompatíveis no Java
             if (usuarioOptional.isPresent()) {
-                UsuarioDTO usuarioDTO = new UsuarioDTO(usuarioOptional.get());
-                return ResponseEntity.ok(usuarioDTO);
+                return ResponseEntity.ok(new UsuarioDTO(usuarioOptional.get()));
             } else {
                 return ResponseEntity.status(404).body("Usuário não encontrado.");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("Erro ao processar o token.");
+            return ResponseEntity.status(401).body("Erro ao processar token.");
         }
     }
 
     @PutMapping("/usuario/me")
-    public ResponseEntity<?> updateUsuario(
-            @CookieValue(name = "e-move-token") String token,
-            @Valid @RequestBody UpdateUsuarioDTO data) {
+    public ResponseEntity<?> updateUsuario(HttpServletRequest request, @Valid @RequestBody UpdateUsuarioDTO data) {
+        String token = extractToken(request);
 
         if (token == null || !tokenService.isTokenValid(token)) {
-            return ResponseEntity.status(401).body("Token inválido ou expirado.");
+            return ResponseEntity.status(401).body("Token inválido.");
         }
 
         try {
@@ -144,11 +112,8 @@ public class UsuarioController {
 
             Usuario usuario = usuarioOptional.get();
 
-            if (!usuario.getEmail().equals(data.getEmail())) {
-
-                if (UsuarioRepository.findByEmail(data.getEmail()).isPresent()) {
-                    return ResponseEntity.status(409).body("Este e-mail já está em uso por outra conta.");
-                }
+            if (!usuario.getEmail().equals(data.getEmail()) && UsuarioRepository.findByEmail(data.getEmail()).isPresent()) {
+                return ResponseEntity.status(409).body("Este e-mail já está em uso.");
             }
 
             usuario.setNome(data.getNome());
@@ -157,19 +122,13 @@ public class UsuarioController {
             usuario.setSexo(data.getSexo());
 
             if (data.getSenha() != null && !data.getSenha().isBlank()) {
-                if (data.getSenha().length() < 8) {
-                    return ResponseEntity.status(400).body("A nova senha deve ter no mínimo 8 caracteres.");
-                }
+                if (data.getSenha().length() < 8) return ResponseEntity.status(400).body("Senha muito curta.");
                 usuario.setSenha(passwordEncoder.encode(data.getSenha()));
             }
 
-            Usuario usuarioAtualizado = UsuarioRepository.save(usuario);
-
-            return ResponseEntity.ok(new UsuarioDTO(usuarioAtualizado));
-
+            return ResponseEntity.ok(new UsuarioDTO(UsuarioRepository.save(usuario)));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Ocorreu um erro interno ao tentar atualizar o usuário.");
+            return ResponseEntity.status(500).body("Erro ao atualizar usuário.");
         }
     }
-
 }

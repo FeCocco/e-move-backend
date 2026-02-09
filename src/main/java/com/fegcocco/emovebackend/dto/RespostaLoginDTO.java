@@ -1,13 +1,3 @@
 package com.fegcocco.emovebackend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-@AllArgsConstructor
-public class RespostaLoginDTO {
-    private String nome;
-    private String email;
-}
+public record RespostaLoginDTO(String nome, String email, String token) { }
