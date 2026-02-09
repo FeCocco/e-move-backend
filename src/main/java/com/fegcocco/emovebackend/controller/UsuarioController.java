@@ -4,10 +4,11 @@ import com.fegcocco.emovebackend.dto.*;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 import com.fegcocco.emovebackend.service.TokenService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true") //MUDAR EM PRODUCAO
 public class UsuarioController {
 
     @Autowired
@@ -46,13 +46,15 @@ public class UsuarioController {
             String token = tokenService.generateToken(user);
 
             // Configuração do Cookie
-            Cookie cookie = new Cookie("e-move-token", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false); // Mudar para true em produção (HTTPS)
-            cookie.setPath("/");
-            cookie.setMaxAge(24 * 60 * 60);
+            ResponseCookie cookie = ResponseCookie.from("e-move-token", token)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .sameSite("None") //para Cross-Site (Vercel -> Render)
+                    .build();
 
-            response.addCookie(cookie);
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
             return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail()));
         } else {
@@ -63,11 +65,15 @@ public class UsuarioController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         // novo cookie com o mesmo nome, valor nulo e tempo de vida 0.
-        Cookie cookie = new Cookie("e-move-token", null);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); //expirar o cookie imediatamente
-        // Adiciona o cookie "expirado" à resposta.
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("e-move-token", "")
+                .httpOnly(true)
+                .secure(true) //
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok().body("Logout realizado com sucesso.");
     }
