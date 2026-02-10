@@ -74,7 +74,7 @@ public class UsuarioController {
 
     @GetMapping("/usuario/me")
     public ResponseEntity<?> getUsuarioLogado(HttpServletRequest request) {
-        String token = extractToken(request);
+        String token = tokenService.resolveToken(request);
 
         if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
         if (!tokenService.isTokenValid(token)) return ResponseEntity.status(401).body("Token inválido ou expirado.");
@@ -83,7 +83,6 @@ public class UsuarioController {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
 
-            // CORREÇÃO: Usando if/else para evitar erro de tipos incompatíveis no Java
             if (usuarioOptional.isPresent()) {
                 return ResponseEntity.ok(new UsuarioDTO(usuarioOptional.get()));
             } else {
@@ -96,7 +95,7 @@ public class UsuarioController {
 
     @PutMapping("/usuario/me")
     public ResponseEntity<?> updateUsuario(HttpServletRequest request, @Valid @RequestBody UpdateUsuarioDTO data) {
-        String token = extractToken(request);
+        String token = tokenService.resolveToken(request);
 
         if (token == null || !tokenService.isTokenValid(token)) {
             return ResponseEntity.status(401).body("Token inválido.");

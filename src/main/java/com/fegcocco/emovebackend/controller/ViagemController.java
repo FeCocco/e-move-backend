@@ -25,8 +25,12 @@ public class ViagemController {
 
     @PostMapping
     public ResponseEntity<?> salvarViagem(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @RequestBody SalvarViagemDTO dto) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Viagens viagemSalva = viagemService.salvarViagem(usuarioId, dto);
@@ -56,9 +60,13 @@ public class ViagemController {
 
     @PatchMapping("/{viagemId}")
     public ResponseEntity<?> atualizarViagem(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @PathVariable Long viagemId,
             @RequestBody AtualizarViagemDTO dto) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Viagens viagemAtualizada = viagemService.atualizarFavorito(usuarioId, viagemId, dto);

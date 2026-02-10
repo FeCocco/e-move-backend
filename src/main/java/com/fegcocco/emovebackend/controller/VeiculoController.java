@@ -44,8 +44,12 @@ public class VeiculoController {
 
     @PostMapping("/meus-veiculos/{veiculoId}")
     public ResponseEntity<?> adicionarVeiculo(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @PathVariable Long veiculoId) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.adicionarVeiculoParaUsuario(usuarioId, veiculoId);
@@ -57,8 +61,12 @@ public class VeiculoController {
 
     @DeleteMapping("/meus-veiculos/{veiculoId}")
     public ResponseEntity<?> removerVeiculo(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @PathVariable Long veiculoId) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.removerVeiculoDoUsuario(usuarioId, veiculoId);
@@ -70,9 +78,13 @@ public class VeiculoController {
 
     @PutMapping("/{veiculoId}/bateria")
     public ResponseEntity<?> atualizarNivelBateria(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @PathVariable Long veiculoId,
             @RequestBody AtualizarNivelBateriaDTO dto) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             VeiculoDTO veiculoAtualizado = veiculoService.atualizarNivelBateria(usuarioId, veiculoId, dto.getNivelBateria());
