@@ -11,6 +11,7 @@ import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.EstacaoRepository;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,33 +36,38 @@ public class EstacaoController {
         return ResponseEntity.ok(ocmService.buscarEstacoesProximas(lat, lon, raio));
     }
 
-    // Favoritar
     @PostMapping("/{stationId}/favorito")
     public ResponseEntity<?> favoritar(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @PathVariable Long stationId) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
 
         System.out.println(">>> Requisição chegou no controller. StationID: " + stationId); // LOG DE DEBUG
 
-            Long userId = tokenService.getUserIdFromToken(token);
-            System.out.println(">>> User ID extraído: " + userId); // LOG DE DEBUG
+        Long userId = tokenService.getUserIdFromToken(token);
+        System.out.println(">>> User ID extraído: " + userId); // LOG DE DEBUG
 
-            if (estacaoRepository.findByUsuario_IdUsuarioAndStationId(userId, stationId).isPresent()) {
-                return ResponseEntity.badRequest().body("Estação já favoritada.");
-            }
+        if (estacaoRepository.findByUsuario_IdUsuarioAndStationId(userId, stationId).isPresent()) {
+            return ResponseEntity.badRequest().body("Estação já favoritada.");
+        }
 
-            Usuario usuario = usuarioRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-            estacaoRepository.save(new Estacoes(stationId, usuario));
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        estacaoRepository.save(new Estacoes(stationId, usuario));
 
-            return ResponseEntity.ok().build();
-
+        return ResponseEntity.ok().build();
     }
 
-    // Desfavoritar
     @DeleteMapping("/{stationId}/favorito")
     public ResponseEntity<?> desfavoritar(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @PathVariable Long stationId) {
+
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         Long userId = tokenService.getUserIdFromToken(token);
 
         estacaoRepository.findByUsuario_IdUsuarioAndStationId(userId, stationId)
@@ -71,7 +77,10 @@ public class EstacaoController {
     }
 
     @GetMapping("/favoritas")
-    public ResponseEntity<List<StationDTO>> listarFavoritas(@CookieValue(name = "e-move-token") String token) {
+    public ResponseEntity<List<StationDTO>> listarFavoritas(HttpServletRequest request) {
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).build();
+
         Long userId = tokenService.getUserIdFromToken(token);
 
         List<Long> stationIds = estacaoRepository.findByUsuario_IdUsuario(userId)

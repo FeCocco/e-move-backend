@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +46,24 @@ public class TokenService {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(jwtSecretKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("e-move-token".equals(c.getName())) {
+                    return c.getValue();
+                }
+            }
+        }
+
+        return null;
     }
 
     private Claims getAllClaimsFromToken(String token) {

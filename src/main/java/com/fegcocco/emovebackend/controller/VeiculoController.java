@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,10 @@ public class VeiculoController {
     }
 
     @GetMapping("/meus-veiculos")
-    public ResponseEntity<?> listarVeiculosDoUsuario(@CookieValue(name = "e-move-token") String token) {
+    public ResponseEntity<?> listarVeiculosDoUsuario(HttpServletRequest request) {
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
             Set<VeiculoDTO> veiculos = veiculoService.listarVeiculosDoUsuario(usuarioId);

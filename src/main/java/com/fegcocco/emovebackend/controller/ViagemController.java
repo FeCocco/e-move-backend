@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -37,13 +38,15 @@ public class ViagemController {
 
     @GetMapping
     public ResponseEntity<?> listarViagensDoUsuario(
-            @CookieValue(name = "e-move-token") String token,
+            HttpServletRequest request,
             @RequestParam(required = false) LocalDate inicio,
             @RequestParam(required = false) LocalDate fim
     ) {
+        String token = tokenService.resolveToken(request);
+        if (token == null) return ResponseEntity.status(401).body("Token não encontrado.");
+
         try {
             Long usuarioId = tokenService.getUserIdFromToken(token);
-            // Passa os parâmetros para o serviço
             List<Viagens> viagens = viagemService.listarViagensPorUsuario(usuarioId, inicio, fim);
             return ResponseEntity.ok(viagens);
         } catch (Exception e) {
