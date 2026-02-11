@@ -3,6 +3,7 @@ package com.fegcocco.emovebackend.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,8 +21,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // tnta a URL do frontend do application.properties.
-    // caso não encontrar a variável, usa 'http://localhost:3000' como ambiente de desenvolvimento.
     @Value("${api.security.cors.origin:http://localhost:3000}")
     private String frontendUrl;
 
@@ -31,6 +30,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 );
