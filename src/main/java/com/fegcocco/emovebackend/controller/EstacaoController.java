@@ -79,15 +79,22 @@ public class EstacaoController {
     @GetMapping("/favoritas")
     public ResponseEntity<List<StationDTO>> listarFavoritas(HttpServletRequest request) {
         String token = tokenService.resolveToken(request);
-        if (token == null) return ResponseEntity.status(401).build();
 
-        Long userId = tokenService.getUserIdFromToken(token);
+        if (token == null || !tokenService.isTokenValid(token)) {
+            return ResponseEntity.status(401).build();
+        }
 
-        List<Long> stationIds = estacaoRepository.findByUsuario_IdUsuario(userId)
-                .stream().map(Estacoes::getStationId).collect(Collectors.toList());
+        try {
+            Long userId = tokenService.getUserIdFromToken(token);
 
-        List<StationDTO> detalhes = ocmService.buscarEstacoesPorIds(stationIds);
+            List<Long> stationIds = estacaoRepository.findByUsuario_IdUsuario(userId)
+                    .stream().map(Estacoes::getStationId).collect(Collectors.toList());
 
-        return ResponseEntity.ok(detalhes);
+            List<StationDTO> detalhes = ocmService.buscarEstacoesPorIds(stationIds);
+
+            return ResponseEntity.ok(detalhes);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 }
