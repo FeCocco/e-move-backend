@@ -26,14 +26,14 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Metodo auxiliar para pegar o token do Header
+    /* Metodo auxiliar para pegar o token do Header
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
         return null;
-    }
+    } */
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO data) {
@@ -128,6 +128,32 @@ public class UsuarioController {
             return ResponseEntity.ok(new UsuarioDTO(UsuarioRepository.save(usuario)));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Erro ao atualizar usuário.");
+        }
+    }
+
+    @DeleteMapping("/usuario/me")
+    public ResponseEntity<?> deleteUsuario(HttpServletRequest request) {
+        String token = tokenService.resolveToken(request);
+
+        if (token == null || !tokenService.isTokenValid(token)) {
+            return ResponseEntity.status(401).body("Token inválido.");
+        }
+
+        try {
+            Long usuarioId = tokenService.getUserIdFromToken(token);
+            Optional<Usuario> usuarioOptional = UsuarioRepository.findById(usuarioId);
+
+            if (usuarioOptional.isEmpty()) {
+                return ResponseEntity.status(404).body("Usuário não encontrado.");
+            }
+
+            UsuarioRepository.deleteById(usuarioId);
+
+            return ResponseEntity.noContent().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erro interno: " + e.getMessage());
         }
     }
 }
