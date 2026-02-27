@@ -147,7 +147,9 @@ public class UsuarioController {
                 return ResponseEntity.status(404).body("Usuário não encontrado.");
             }
 
-            UsuarioRepository.deleteById(usuarioId);
+            Usuario usuario = usuarioOptional.get();
+            usuario.setAtivo(false);
+            UsuarioRepository.save(usuario);
 
             return ResponseEntity.noContent().build();
 

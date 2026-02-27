@@ -59,4 +59,7 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<Viagens> viagens = new HashSet<>();
+
+    @Column(nullable = false)
+    private Boolean ativo = true;
 }
