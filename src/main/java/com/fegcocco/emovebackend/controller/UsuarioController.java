@@ -46,6 +46,12 @@ public class UsuarioController {
         Usuario user = userOptional.get();
         String token = tokenService.generateToken(user);
 
+        if (user.getAtivo() == false) {
+            Usuario usuario = userOptional.get();
+            usuario.setAtivo(true);
+            UsuarioRepository.save(usuario);
+        }
+
         return ResponseEntity.ok(new RespostaLoginDTO(user.getNome(), user.getEmail(), token));
     }
 
