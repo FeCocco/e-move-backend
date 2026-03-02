@@ -3,6 +3,8 @@ package com.fegcocco.emovebackend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,7 +50,21 @@ public class Usuario {
     @CreationTimestamp
     private Date dataCadastro;
 
-    @OneToMany(mappedBy = "usuario")
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<UsuarioVeiculo> veiculos = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Estacoes> estacoes = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Viagens> viagens = new HashSet<>();
+
+    @Column(nullable = false)
+    private Boolean ativo = true;
+
+    @Column(name = "data_desativacao")
+    private LocalDateTime dataDesativacao;
 }
