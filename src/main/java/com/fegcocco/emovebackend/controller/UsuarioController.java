@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -155,6 +156,7 @@ public class UsuarioController {
 
             Usuario usuario = usuarioOptional.get();
             usuario.setAtivo(false);
+            usuario.setDataDesativacao(LocalDateTime.now());
             UsuarioRepository.save(usuario);
 
             return ResponseEntity.noContent().build();

@@ -3,6 +3,8 @@ package com.fegcocco.emovebackend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,4 +64,7 @@ public class Usuario {
 
     @Column(nullable = false)
     private Boolean ativo = true;
+
+    @Column(name = "data_desativacao")
+    private LocalDateTime dataDesativacao;
 }
