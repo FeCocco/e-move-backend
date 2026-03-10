@@ -10,18 +10,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
-
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
 
-    // cache in-memory: key -> bucket
-    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final Cache<String, Bucket> buckets = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterAccess(Duration.ofMinutes(5))
+            .build();
 
     public RateLimitingFilter(TokenService tokenService) {
         this.tokenService = tokenService;
@@ -43,9 +44,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         Long userId = tryResolveUserId(request);
-        String key = RateLimitKeyResolver.resolveKey(request, userId);
 
-        Bucket bucket = buckets.computeIfAbsent(key, k -> newBucketFor(request, userId));
+        String path = request.getRequestURI();
+
+        String routeType = (path.equals("/api/login") || path.equals("/api/cadastro")) ? "auth" : "general";
+        String baseKey = RateLimitKeyResolver.resolveKey(request, userId);
+        String key = baseKey + ":" + routeType;
+
+        Bucket bucket = buckets.get(key, k -> newBucketFor(request, userId));
 
         if (bucket.tryConsume(1)) {
             filterChain.doFilter(request, response);
