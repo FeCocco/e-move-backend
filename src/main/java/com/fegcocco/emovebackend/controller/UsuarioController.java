@@ -3,6 +3,7 @@ package com.fegcocco.emovebackend.controller;
 import com.fegcocco.emovebackend.dto.*;
 import com.fegcocco.emovebackend.entity.Usuario;
 import com.fegcocco.emovebackend.repository.UsuarioRepository;
+import com.fegcocco.emovebackend.service.EmailDomainValidationService;
 import com.fegcocco.emovebackend.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,6 +28,10 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailDomainValidationService emailDomainValidationService;
+
+
     /* Metodo auxiliar para pegar o token do Header
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
@@ -34,7 +39,7 @@ public class UsuarioController {
             return header.substring(7);
         }
         return null;
-    } */
+    } DESATIVADO */
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO data) {
@@ -63,8 +68,14 @@ public class UsuarioController {
 
     @PostMapping("/cadastro")
     public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody CadastroDTO data) {
+
         if (UsuarioRepository.findByEmail(data.getEmail()).isPresent()) {
             return ResponseEntity.status(409).body("Este e-mail já está em uso.");
+        }
+
+        if (!emailDomainValidationService.hasMxRecord(data.getEmail())) {
+            return ResponseEntity.status(400)
+                    .body("O domínio do e-mail não possui servidor de e-mail válido.");
         }
 
         Usuario novoUsuario = new Usuario();
