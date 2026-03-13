@@ -133,6 +133,11 @@ public class UsuarioController {
                 return ResponseEntity.status(409).body("Este e-mail já está em uso.");
             }
 
+            if (!emailDomainValidationService.hasMxRecord(data.getEmail())) {
+                return ResponseEntity.status(400)
+                        .body("O domínio do e-mail não possui servidor de e-mail válido.");
+            }
+
             usuario.setNome(data.getNome());
             usuario.setEmail(data.getEmail());
             usuario.setTelefone(data.getTelefone());
