@@ -137,12 +137,12 @@ jwt.expiration=86400000
 
 # LocationIQ API Configuration
 locationiq.api.key=YOUR_API_KEY
-locationiq.api.url=[https://us1.locationiq.com/v1/search](https://us1.locationiq.com/v1/search)
-locationiq.api.directions.url=[https://us1.locationiq.com/v1/directions/driving/](https://us1.locationiq.com/v1/directions/driving/)
+locationiq.api.url=https://us1.locationiq.com/v1/search
+locationiq.api.directions.url=https://us1.locationiq.com/v1/directions/driving/
 
 # OpenChargeMap API
 openchargemap.api.key=YOUR_API_KEY
-openchargemap.api.url=[https://api-01.openchargemap.io/v3/poi](https://api-01.openchargemap.io/v3/poi)
+openchargemap.api.url=https://api-01.openchargemap.io/v3/poi
 
 # Pool de Conexões (HikariCP)
 spring.datasource.hikari.connection-timeout=3000
