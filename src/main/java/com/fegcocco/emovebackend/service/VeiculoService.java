@@ -73,11 +73,18 @@ public class VeiculoService {
     }
 
     public Set<VeiculoDTO> removerVeiculoDoUsuario(Long usuarioId, Long veiculoId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
         UsuarioVeiculoId id = new UsuarioVeiculoId(usuarioId, veiculoId);
-        if (!usuarioVeiculoRepository.existsById(id)) {
+
+        boolean removido = usuario.getVeiculos().removeIf(uv -> uv.getId().equals(id));
+
+        if (!removido) {
             throw new IllegalStateException("Associação entre usuário e veículo não encontrada.");
         }
-        usuarioVeiculoRepository.deleteById(id);
+
+        // Retorna a lista já atualizada pelo próprio usuário em memória
         return listarVeiculosDoUsuario(usuarioId);
     }
 
