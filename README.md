@@ -107,7 +107,6 @@ FLUSH PRIVILEGES;
 
 -- Verificação (opcional)
 SHOW GRANTS FOR 'User_emove'@'localhost';
-Importante: Substitua SUA_SENHA_SEGURA_AQUI por uma senha forte com pelo menos 12 caracteres, incluindo letras, números e símbolos especiais.
 ```
 
 ### 3. Configure as Variáveis de Ambiente
