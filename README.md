@@ -157,15 +157,13 @@ spring.jpa.open-in-view=false
 ### 4. Compile e Instale Dependências
 
 #### Linux/macOS:
-
 ```bash
 chmod +x mvnw  # Torna o wrapper executável
 ./mvnw clean install
-Windows:
 ```
 
-#### DOS
-```bash
+#### Windows
+```DOS
 mvnw.cmd clean install
 ```
 ### 5. Inicie o Servidor
