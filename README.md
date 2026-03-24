@@ -17,9 +17,9 @@ A API é consumida pelo nosso [frontend (e-Move Frontend)](https://github.com/Fe
 
 ### Gerenciamento de Usuários
 - **Perfil Completo:** Endpoint protegido (`/api/usuario/me`) para dados do usuário
-- **Atualização de Perfil:** Sistema de edição de informações pessoais (`PUT /api/usuario/me`)
+- **Atualização e Exclusão:** Sistema de edição de informações pessoais (`PUT /api/usuario/me`) e exclusão de conta (deleção lógica via `DELETE /api/usuario/me` com rotina de limpeza agendada)
 - **Validação de Duplicatas:** Prevenção de emails duplicados no sistema
-- **Campos Abrangentes:** Nome, email, CPF, telefone, sexo, data de nascimento
+- **Campos Abrangentes:** Nome, email, telefone, sexo, data de nascimento
 - **Timestamps Automáticos:** Rastreamento de data de cadastro
 
 ### Sistema de Veículos Avançado
@@ -30,11 +30,11 @@ A API é consumida pelo nosso [frontend (e-Move Frontend)](https://github.com/Fe
 - **Marcas Populares:** Tesla, BYD, Chevrolet, BMW, Audi, Volkswagen, Nissan e muitas outras
 - **Autonomia Estimada:** Cálculo automático baseado no nível da bateria atual
 
-### Estrutura de Dados Preparada (Em desenvolvimento)
-- **Rotas:** Sistema pronto para gerenciamento de rotas personalizadas
-- **Estações:** Estrutura para favoritar estações de recarga
-- **Viagens:** Rastreamento de viagens com métricas de CO₂ e quilometragem
-- **Relacionamentos:** Arquitetura robusta Many-to-Many e One-to-Many
+### Gestão de Rotas, Viagens e Estações
+- **Rotas Diretas:** Integração com LocationIQ para cálculo de distância entre coordenadas
+- **Estações Favoritas:** Integração com OpenChargeMap permitindo aos usuários buscar e favoritar estações de recarga próximas (`/api/estacoes/favoritas`)
+- **Histórico de Viagens:** Rastreamento das viagens do usuário, salvando data, quilometragem, apelido da rota e cálculo automático do CO₂ preservado
+- **Relacionamentos:** Arquitetura robusta Many-to-Many e One-to-Many conectando Usuários, Veículos, Viagens e Estações
 
 ---
 
@@ -54,7 +54,7 @@ A API é consumida pelo nosso [frontend (e-Move Frontend)](https://github.com/Fe
 ### Segurança
 - **[Spring Security](https://spring.io/projects/spring-security)** - Framework de segurança enterprise
 - **[JWT (jjwt 0.11.5)](https://github.com/jwtk/jjwt)** - Tokens seguros com assinatura HMAC
-- **Password Encoding** - Preparado para BCrypt (em implementação)
+- **Password Encoding** - Preparado para BCrypt
 
 ### Qualidade & Produtividade
 - **[Lombok](https://projectlombok.org/)** - Redução de boilerplate code
@@ -85,17 +85,18 @@ A API é consumida pelo nosso [frontend (e-Move Frontend)](https://github.com/Fe
 ## Configuração do Ambiente Local
 
 ### 1. Clone o Repositório
+
 ```bash
-git clone https://github.com/FeCocco/e-move-backend.git
+git clone [https://github.com/FeCocco/e-move-backend.git](https://github.com/FeCocco/e-move-backend.git)
 cd e-move-backend
 ```
 
-### 2. 🗄️ Configure o Banco de Dados
-Conecte-se ao seu servidor MariaDB/MySQL e execute:
+### 2. Configure o Banco de Dados
 
-```sql
+Conecte-se ao seu servidor MariaDB/MySQL e execute:
+```SQL
 -- Criação do banco de dados
-CREATE DATABASE EMOVE CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE EMOVE;
 
 -- Criação do usuário da aplicação
 CREATE USER 'User_emove'@'localhost' IDENTIFIED BY 'SUA_SENHA_SEGURA_AQUI';
@@ -106,17 +107,18 @@ FLUSH PRIVILEGES;
 
 -- Verificação (opcional)
 SHOW GRANTS FOR 'User_emove'@'localhost';
+Importante: Substitua SUA_SENHA_SEGURA_AQUI por uma senha forte com pelo menos 12 caracteres, incluindo letras, números e símbolos especiais.
 ```
 
-> **Importante:** Substitua `SUA_SENHA_SEGURA_AQUI` por uma senha forte com pelo menos 12 caracteres, incluindo letras, números e símbolos especiais.
-
 ### 3. Configure as Variáveis de Ambiente
-Na pasta `src/main/resources/`:
 
-1. **Renomeie** `application-dev.properties.template` para `application-dev.properties`
-2. **Edite o arquivo** e preencha os valores:
+Na pasta src/main/resources/:
 
-```properties
+Renomeie application-dev.properties.template para application-dev.properties
+
+Edite o arquivo e preencha os valores:
+
+```Properties
 # Configurações do Servidor
 server.port=8080
 
@@ -134,6 +136,15 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
 jwt.secret=GERE_UMA_CHAVE_SECRETA_FORTE_AQUI_32_CARACTERES_MINIMO
 jwt.expiration=86400000
 
+# LocationIQ API Configuration
+locationiq.api.key=YOUR_API_KEY
+locationiq.api.url=[https://us1.locationiq.com/v1/search](https://us1.locationiq.com/v1/search)
+locationiq.api.directions.url=[https://us1.locationiq.com/v1/directions/driving/](https://us1.locationiq.com/v1/directions/driving/)
+
+# OpenChargeMap API
+openchargemap.api.key=YOUR_API_KEY
+openchargemap.api.url=[https://api-01.openchargemap.io/v3/poi](https://api-01.openchargemap.io/v3/poi)
+
 # Pool de Conexões (HikariCP)
 spring.datasource.hikari.connection-timeout=3000
 spring.datasource.hikari.idle-timeout=30000
@@ -144,367 +155,133 @@ spring.datasource.hikari.maximum-pool-size=5
 # Performance
 spring.jpa.open-in-view=false
 ```
-
-> **Dica de Segurança:** Para gerar uma chave JWT segura:
-> ```bash
-> # No terminal (Linux/macOS)
-> openssl rand -base64 32
-> 
-> # Ou use um gerador online confiável
-> ```
-
 ### 4. Compile e Instale Dependências
+
 #### Linux/macOS:
+
 ```bash
 chmod +x mvnw  # Torna o wrapper executável
 ./mvnw clean install
+Windows:
 ```
 
-#### Windows:
-```cmd
+#### DOS
+```bash
 mvnw.cmd clean install
 ```
-
 ### 5. Inicie o Servidor
-#### Via Maven Wrapper (Recomendado):
-```bash
-# Linux/macOS
-./mvnw spring-boot:run
 
-# Windows
-mvnw.cmd spring-boot:run
+#### Via Maven Wrapper (Recomendado):
+#### Linux/macOS
+```bash
+./mvnw spring-boot:run
 ```
 
+#### Windows
+```bash
+mvnw.cmd spring-boot:run
+```
 #### Via IDE:
-Execute a classe `EMoveBackendApplication.java` diretamente pela sua IDE.
+
+Execute a classe EMoveBackendApplication.java diretamente pela sua IDE.
 
 ### 6. Verificação
-A API estará disponível em: **[http://localhost:8080](http://localhost:8080)**
 
-**Teste rápido:**
+A API estará disponível em: http://localhost:8080
+
+Teste rápido:
+
 ```bash
 curl http://localhost:8080/api/veiculos
 ```
+#### Experiência Completa: Para funcionalidade completa, inicie também o e-Move Frontend.
 
-> **Experiência Completa:** Para funcionalidade completa, inicie também o **[e-Move Frontend](https://github.com/FeCocco/e-move-frontend)**.
+### Documentação da API
+#### Endpoints de Autenticação
 
----
-
-## Documentação da API
-
-### Endpoints de Autenticação
-
-#### `POST /api/cadastro`
+- POST /api/cadastro ->
 Cadastra um novo usuário no sistema.
-
-**Request Body:**
-```json
+```Json
 {
   "nome": "João Silva",
   "email": "joao@exemplo.com",
-  "cpf": "12345678901",
   "telefone": "11999999999",
   "sexo": "MASCULINO",
-  "dataNascimento": "1990-01-01",
+  "dataNascimento": "1990-01-01T00:00:00.000Z",
   "senha": "senhaSegura123"
 }
 ```
-
-#### `POST /api/login`
+- POST /api/login ->
 Autentica usuário e gera token JWT.
-
-**Request Body:**
-```json
+```JSON
 {
   "email": "joao@exemplo.com",
   "senha": "senhaSegura123"
 }
 ```
+- POST /api/logout ->
+Remove token de autenticação.
 
-#### `POST /api/logout`
-Remove token de autenticação (limpa cookie).
+#### Endpoints de Usuário
 
-### Endpoints de Usuário
-
-#### `GET /api/usuario/me`
+- GET /api/usuario/me ->
 Retorna dados do usuário autenticado.
 
-**Headers:** `Cookie: e-move-token=JWT_TOKEN`
-
-#### `PUT /api/usuario/me`
+- PUT /api/usuario/me ->
 Atualiza dados do usuário autenticado.
 
-### Endpoints de Veículos
+- DELETE /api/usuario/me ->
+Desativa logicamente o usuário logado (exclusão definitiva de banco feita via rotina noturna).
 
-#### `GET /api/veiculos`
+#### Endpoints de Veículos
+
+- GET /api/veiculos ->
 Lista todos os veículos disponíveis no catálogo.
 
-#### `GET /api/veiculos/meus-veiculos`
+- GET /api/veiculos/meus-veiculos ->
 Lista veículos da garagem do usuário autenticado.
 
-#### `POST /api/veiculos/meus-veiculos/{veiculoId}`
+- POST /api/veiculos/meus-veiculos/{veiculoId} ->
 Adiciona veículo à garagem do usuário.
 
-#### `DELETE /api/veiculos/meus-veiculos/{veiculoId}`
+- DELETE /api/veiculos/meus-veiculos/{veiculoId} ->
 Remove veículo da garagem do usuário.
 
-#### `PUT /api/veiculos/{veiculoId}/bateria`
+- PUT /api/veiculos/{veiculoId}/bateria ->
 Atualiza nível da bateria do veículo.
-
-**Request Body:**
-```json
+```JSON
 {
   "nivelBateria": 85
 }
 ```
 
----
+### Roadmap Técnico
+[x] Autenticação JWT - Sistema completo implementado
 
-## Scripts de Build
+[x] CRUD de Veículos - Garagem virtual funcional
 
-```bash
-# Desenvolvimento
-./mvnw spring-boot:run                 # Inicia aplicação em modo dev
-./mvnw clean compile                   # Compila o código
-./mvnw test                           # Executa testes unitários
+[x] Base de Dados - 29+ veículos pré-cadastrados
 
-# Produção
-./mvnw clean package                  # Gera JAR para produção
-./mvnw clean install                  # Instala dependências e gera JAR
-java -jar target/emove-0.1.0-alpha.1.jar  # Executa JAR gerado
+[x] API de Rotas - Integração com LocationIQ
 
-# Utilitários
-./mvnw dependency:tree               # Visualiza árvore de dependências
-./mvnw clean                        # Limpa arquivos de build
-```
+[x] API de Estações - Integração OpenChargeMap com URL api-01
 
----
+[x] Sistema de Viagens - Histórico e métricas de CO₂
 
-## Arquitetura do Projeto
+[x] Password Encoding - BCrypt para senhas
 
-```
-src/main/java/com/fegcocco/emovebackend/
-├── EMoveBackendApplication.java    # Classe principal e inicialização
-├── config/
-│   └── SecurityConfig.java         # Configurações de segurança e CORS
-├── controller/                     # Controladores REST
-│   ├── UsuarioController.java     # Endpoints de usuários
-│   └── VeiculoController.java     # Endpoints de veículos
-├── dto/                           # Data Transfer Objects
-│   ├── CadastroDTO.java          # DTO para cadastro
-│   ├── LoginDTO.java             # DTO para login
-│   ├── UsuarioDTO.java           # DTO de usuário
-│   ├── VeiculoDTO.java           # DTO de veículo
-│   └── ...                       # Outros DTOs
-├── entity/                        # Entidades JPA
-│   ├── Usuario.java              # Entidade usuário
-│   ├── Veiculos.java             # Entidade veículo
-│   ├── UsuarioVeiculo.java       # Relação Many-to-Many
-│   ├── Rotas.java                # Entidade rotas (preparada)
-│   ├── Estacoes.java             # Entidade estações (preparada)
-│   └── Viagens.java              # Entidade viagens (preparada)
-├── repository/                    # Repositórios Spring Data
-│   ├── UsuarioRepository.java
-│   ├── VeiculoRepository.java
-│   └── UsuarioVeiculoRepository.java
-└── service/                      # Camada de negócios
-    ├── TokenService.java         # Serviço JWT
-    └── VeiculoService.java       # Lógica de veículos
-```
+[x] Rate Limiting - Proteção contra spam
 
----
+[ ] API Documentation - Swagger/OpenAPI
 
-## Modelo de Dados
+[ ] Monitoring - Health checks e métricas
 
-### Entidades Principais
-
-#### **Usuario**
-- ID único auto-incremento
-- Nome, email, CPF, telefone
-- Sexo (enum: MASCULINO/FEMININO)
-- Data de nascimento e cadastro
-- Senha (preparada para hash)
-- Relacionamento com veículos
-
-#### **Veiculos**
-- Catálogo com 29+ modelos
-- Marca, modelo, autonomia
-- Tipos de conector (enum)
-- Relacionamento Many-to-Many com usuários
-
-#### **UsuarioVeiculo**
-- Tabela de associação
-- Nível de bateria personalizado
-- Cálculo de autonomia estimada
-
-#### **Estruturas Preparadas (Ainda a ser implementadas)**
-- **Rotas:** Nome, coordenadas, distância
-- **Estações:** Favoritos de estações de recarga
-- **Viagens:** Histórico com métricas CO₂
-
----
-
-## Catálogo de Veículos
-
-O sistema vem pré-populado com uma base abrangente de veículos elétricos:
-
-### Marcas Disponíveis
-- **Tesla:** Model 3
-- **BYD:** Dolphin, Dolphin Plus, Seal, Yuan Plus
-- **Chevrolet:** Bolt EV
-- **BMW:** i3, iX3, i4
-- **Volkswagen:** ID.4
-- **Nissan:** Leaf
-- **Audi:** E-tron
-- **Hyundai:** Kona Electric
-- **Kia:** Niro EV
-- **Porsche:** Taycan
-- **Ford:** Mustang Mach-E
-- **Volvo:** EX30, XC40 Recharge, C40 Recharge
-- **Peugeot:** e-2008, e-208 GT
-- **Renault:** Kwid E-Tech, Megane E-Tech
-- **GWM:** Ora 03 Skin, Ora 03 GT
-- **JAC:** E-JS1
-- **Caoa Chery:** iCar
-- **Mini:** Cooper S E
-
-### Tipos de Conectores Suportados
-- **SAE Tipo 1** (J1772)
-- **CCS Tipo 2** (Combined Charging System)
-- **CHAdeMO**
-- **Tipo 2 AC**
-- **GBT** (padrão chinês)
-
----
-
-## Configurações de Segurança
-
-### Recursos Implementados
-- **CORS Configurado:** Comunicação segura com frontend
-- **JWT com HMAC-SHA256:** Tokens criptografados
-- **Cookies HttpOnly:** Proteção contra XSS
-- **Validação Server-Side:** Prevenção de dados inválidos
-- **Pool de Conexões Otimizado:** Performance e segurança
-
-### Para Produção
-```properties
-# Configurações recomendadas para produção
-cookie.setSecure(true)                    # Apenas HTTPS
-cookie.setSameSite("Strict")              # Proteção CSRF
-spring.profiles.active=prod               # Profile de produção
-```
-
----
-
-## Testes
-
-```bash
-# Executar todos os testes
-./mvnw test
-
-# Executar com relatório de cobertura
-./mvnw test jacoco:report
-
-# Executar testes específicos
-./mvnw test -Dtest=UsuarioControllerTest
-```
-
----
-
-## Deploy
-
-### Build para Produção
-```bash
-# Gerar JAR otimizado
-./mvnw clean package -DskipTests
-
-# JAR gerado em:
-target/emove-0.1.0-alpha.1.jar
-```
-
-### Execução
-```bash
-# Com perfil de produção
-java -jar -Dspring.profiles.active=prod target/emove-0.1.0-alpha.1.jar
-
-# Com configurações específicas
-java -jar -Xmx512m -Dserver.port=8080 target/emove-0.1.0-alpha.1.jar
-```
-
----
-
-## Contribuindo
-
-1. **Fork** o projeto
-2. **Crie** uma branch (`git checkout -b feature/NovaFuncionalidade`)
-3. **Commit** suas mudanças (`git commit -m 'Add: Nova funcionalidade'`)
-4. **Push** para a branch (`git push origin feature/NovaFuncionalidade`)
-5. **Abra** um Pull Request
-
-### Padrões de Commit
-```
-feat: nova funcionalidade
-fix: correção de bug
-docs: documentação
-style: formatação
-refactor: refatoração
-test: testes
-chore: manutenção
-```
-
----
-
-## Equipe de Desenvolvimento
-
-- **Felipe Giacomini Cocco** - *RA 116525* 
-- **Fernando Gabriel Perinotto** - *RA 115575* 
-- **Jhonatas Kévin de Oliveira Braga** - *RA 116707* 
-- **Lucas Santos Souza** - *RA 116852* 
-- **Samuel Wilson Rufino** - *RA 117792* 
-
----
-
-## Suporte
-
-### Problemas e Sugestões
-- **Email:** [emovesuporte@gmail.com](mailto:emovesuporte@gmail.com)
-- **Issues:** [GitHub Issues](https://github.com/FeCocco/e-move-backend/issues)
-
-### FAQ Técnico
-- **Erro de conexão:** Verifique se MariaDB/MySQL está rodando
-- **Token inválido:** Regenere a chave JWT no `application-dev.properties`
-- **Permissão negada:** Execute `chmod +x mvnw` no Linux/macOS
-
----
-
-## Licença
-
-Este projeto ainda está definindo sua licença. Mais informações em breve.
-
----
-
-## Roadmap Técnico
-
-- [x] **Autenticação JWT** - Sistema completo implementado
-- [x] **CRUD de Veículos** - Garagem virtual funcional
-- [x] **Base de Dados** - 29+ veículos pré-cadastrados
-- [x] **API de Rotas** - Integração OSRM/OpenRouteService
-- [x] **API de Estações** - Integração OpenChargeMap
-- [x] **Sistema de Viagens** - Histórico e métricas
-- [x] **Password Encoding** - BCrypt para senhas
-- [ ] **Rate Limiting** - Proteção contra spam
-- [ ] **API Documentation** - Swagger/OpenAPI
-- [ ] **Monitoring** - Health checks e métricas
-- [ ] **Cache Redis** - Performance otimizada
-
----
+[ ] Cache Redis - Performance otimizada
 
 <div align="center">
 
-**[Conecte com o Frontend](https://github.com/FeCocco/e-move-frontend)**
+API construída com ⚡ pela equipe e-Move
 
-*API construída com ⚡ pela equipe e-Move*
-
-**Java:** `17` | **Spring Boot:** `3.3.3`
+Java: 17 | Spring Boot: 3.3.3
 
 </div>
