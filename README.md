@@ -87,7 +87,7 @@ A API é consumida pelo nosso [frontend (e-Move Frontend)](https://github.com/Fe
 ### 1. Clone o Repositório
 
 ```bash
-git clone [https://github.com/FeCocco/e-move-backend.git](https://github.com/FeCocco/e-move-backend.git)
+git clone https://github.com/FeCocco/e-move-backend.git
 cd e-move-backend
 ```
 
