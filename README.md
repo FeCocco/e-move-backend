@@ -1,4 +1,5 @@
 # e-Move Backend
+[![CI do e-Move](https://github.com/FeCocco/e-move-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/FeCocco/e-move-backend/actions/workflows/ci.yml)
 
 API RESTful robusta desenvolvida em **Spring Boot** para a plataforma **e-Move**, um planejador de rotas inteligente para veículos elétricos. Este backend gerencia toda a lógica de negócios, autenticação segura, e serve como ponte confiável para APIs externas de mapeamento e estações de recarga.
 
