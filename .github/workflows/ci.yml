@@ -20,4 +20,4 @@ jobs:
           cache: maven
 
       - name: Rodar Testes Unitarios
-        run: mvn clean test
+        run: mvn clean test -Drevision=Teste-Version
