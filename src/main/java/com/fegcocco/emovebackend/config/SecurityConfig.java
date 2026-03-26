@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,5 +56,15 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Configuration
+    public class ClockConfig {
+
+        @Bean
+        public Clock clock() {
+            // Em produção, o Spring vai usar o relógio normal do sistema
+            return Clock.systemDefaultZone();
+        }
     }
 }
