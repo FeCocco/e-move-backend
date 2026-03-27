@@ -1,10 +1,8 @@
 package com.fegcocco.emovebackend.service;
 
 import com.fegcocco.emovebackend.dto.GeocodingDTO;
-// IMPORTS ADICIONADOS
 import com.fegcocco.emovebackend.dto.directions.LocationIQDirectionsResponseDTO;
 import java.util.Locale;
-// FIM DOS IMPORTS ADICIONADOS
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -30,9 +28,9 @@ public class GeocodingService {
     @Value("${locationiq.api.directions.url}")
     private String directionsApiUrl;
 
-    public GeocodingService() {
-        this.restTemplate = new RestTemplate();
-        this.objectMapper = new ObjectMapper();
+    public GeocodingService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public List<GeocodingDTO> forwardGeocode(String address) {
